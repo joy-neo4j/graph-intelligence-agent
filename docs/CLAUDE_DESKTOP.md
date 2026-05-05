@@ -1,5 +1,20 @@
 # Neo4j MCP Workspace — Claude Desktop Guide
 
+## 1. Install the workspace
+
+1. Download `neo4j-mcp-workspace.dxt` from the [latest release](https://github.com/neo4j-field/neo4j-mcp-workspace-template/releases?q=neo4j-mcp-workspace)
+2. **Double-click** the `.dxt` file — Claude Desktop opens an install dialog
+3. Fill in your credentials:
+   - **Documents DB** — URI, username, password, database name (e.g. `neo4j`)
+   - **Ontology DB** — URI, username, password, database name (e.g. `neo4j` on Aura, `ontology` on Neo4j Desktop). Leave URI/username/password blank to reuse the Documents DB credentials.
+   - **OpenAI API key** — for embeddings; also used for extraction if your extraction model is OpenAI
+   - **Extraction model** — defaults to `openai/gpt-5-mini`; change to any [LiteLLM-compatible](https://docs.litellm.ai/docs/providers) model
+4. Click **Install** — all MCP servers start automatically
+
+> **Prerequisites:** [uv](https://docs.astral.sh/uv/) installed, two Neo4j databases (Documents + Ontology), and an LLM API key. See the [README](../README.md#claude-desktop) for the full prerequisite list and platform-specific `uv` install instructions.
+
+---
+
 ## The key idea: your ontology lives in Neo4j
 
 When you use the workspace through Claude Desktop, the extraction ontology — what entities to extract, what aliases to apply, what values are valid — is stored as a **graph** in your Ontology database.
@@ -46,7 +61,14 @@ Ask Claude:
 
 Claude calls `setup_ontology_db` — creates the constraints and indexes needed in your Ontology DB. Do this once per fresh database.
 
-### 2. Design your ontology
+### 2. Parse your documents
+
+Give Claude the full path to a folder of PDF files:
+> "Parse the PDFs in /Users/alice/Documents/contracts/"
+
+Claude calls `create_lexical_graph` → `embed_chunks` to build a searchable chunk graph in your Documents DB. This runs in the background — kick it off here, then move on to ontology design while it runs.
+
+### 3. Design your ontology
 
 Describe your domain to Claude in plain language:
 > "I have legal contracts. I want to extract parties, key dates, obligations, and penalty clauses."
@@ -56,17 +78,10 @@ Claude will:
 - Write the ontology as graph nodes directly to your Ontology DB (`:NodeType`, `:PropertyDef`, `:RelationshipType`, aliases, blocklists)
 - Show you the ontology via `generate_schema_from_ontology` so you can review what will be extracted
 
-### 3. Parse your documents
-
-Give Claude the full path to your PDF files:
-> "Parse this document: /Users/alice/Documents/contract.pdf"
-
-Claude calls `create_lexical_graph` → `embed_chunks` to build a searchable chunk graph in your Documents DB.
-
 ### 4. Extract entities
 
-Ask Claude:
-> "Extract entities from the document"
+Once parsing has finished and the ontology looks right, ask Claude:
+> "Extract entities from the documents"
 
 Claude calls `extract_entities(ontology_name=...)` — runs the LLM over every chunk, writes extracted entities and relationships to your Documents DB.
 
@@ -80,9 +95,9 @@ Claude calls `extract_entities(ontology_name=...)` — runs the LLM over every c
 
 ## Editing your ontology in Bloom
 
-1. Open **Neo4j Bloom** and connect to your **Ontology DB**
-2. Search for your ontology: `MATCH (o:Ontology {name: "my_ontology"}) RETURN o`
-3. Expand the graph — you'll see NodeTypes, PropertyDefs, AliasMaps, Blocklists
+1. Open **Neo4j Bloom** and connect to the Neo4j instance that holds your **Ontology DB**
+2. In the **top bar of Bloom**, find the **Database** selector and pick your `ontology` database (on Aura it is always `neo4j`; on Neo4j Desktop it is whatever you named it, e.g. `ontology`). If you skip this, you will be browsing the Documents DB and see no NodeType/PropertyDef nodes
+3. Expand the graph — you will see NodeTypes, PropertyDefs, AliasMaps, Blocklists
 4. Click any node to edit its properties inline
 5. To add a new alias: create an `:Alias {from: "...", to: "..."}` node and connect it to the relevant `:AliasMap`
 6. Go back to Claude and ask to regenerate the schema and re-extract
