@@ -59,7 +59,7 @@ Add to your `.cursor/mcp.json`:
         "NEO4J_PASSWORD": "your-password",
         "NEO4J_DATABASE": "neo4j",
         "EMBEDDING_MODEL": "text-embedding-3-small",
-        "EXTRACTION_MODEL": "gpt-5-mini",
+        "EXTRACTION_MODEL": "gpt-5.4-mini",
         "OPENAI_API_KEY": "sk-..."
       }
     }
@@ -116,7 +116,7 @@ Tools must be called in a specific order — which tools to call depends on the 
 | `NEO4J_PASSWORD` | Yes | - | Neo4j password |
 | `NEO4J_DATABASE` | No | `neo4j` | Database name |
 | `EMBEDDING_MODEL` | No | `text-embedding-3-small` | Default embedding model ([LiteLLM providers](https://docs.litellm.ai/docs/embedding/supported_embedding)) |
-| `EXTRACTION_MODEL` | No | `gpt-5-mini` | LLM/VLM for section hierarchy and description generation |
+| `EXTRACTION_MODEL` | No | `gpt-5.4-mini` | LLM/VLM for section hierarchy and description generation |
 | `OPENAI_API_KEY` | Depends | - | Required when using OpenAI models for embedding or extraction. Other providers use their own key (e.g. `ANTHROPIC_API_KEY`, `AZURE_API_KEY`). See [LiteLLM docs](https://docs.litellm.ai/docs/providers) |
 
 ## Requirements

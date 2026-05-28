@@ -186,7 +186,7 @@ class CompanyEntity(BaseModel):
 | `NEO4J_USERNAME` | `neo4j` | Neo4j username |
 | `NEO4J_PASSWORD` | (required) | Neo4j password |
 | `NEO4J_DATABASE` | `neo4j` | Neo4j database name |
-| `EXTRACTION_MODEL` | `gpt-5-mini` | Default LLM model for extraction |
+| `EXTRACTION_MODEL` | `gpt-5.4-mini` | Default LLM model for extraction |
 | `OPENAI_API_KEY` | - | Required for OpenAI models |
 
 ## Usage with Cursor
@@ -207,7 +207,7 @@ Add to your `~/.cursor/mcp.json`:
         "NEO4J_USERNAME": "neo4j",
         "NEO4J_PASSWORD": "your-password",
         "OPENAI_API_KEY": "your-api-key",
-        "EXTRACTION_MODEL": "gpt-5-mini"
+        "EXTRACTION_MODEL": "gpt-5.4-mini"
       }
     }
   }
@@ -216,7 +216,7 @@ Add to your `~/.cursor/mcp.json`:
 
 ## Performance
 
-Tested on pharma pipeline PDFs with `gpt-5-mini`:
+Tested on pharma pipeline PDFs with `gpt-5.4-mini`:
 
 | Mode | Concurrency | Time | Entities | Relationships |
 |------|-------------|------|----------|---------------|

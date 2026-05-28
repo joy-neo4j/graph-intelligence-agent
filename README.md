@@ -63,7 +63,7 @@ If you use **Claude Desktop** (not one of the 6 coding tools above), install the
    - **Documents DB** — URI, username, password, database name (e.g. `neo4j`)
    - **Ontology DB** — URI, username, password, database name (e.g. `neo4j` on Aura, `ontology` on Desktop). Leave URI/username/password blank if using the same Neo4j instance as Documents DB.
    - **OpenAI API key** — for embeddings; also used for extraction if your extraction model is OpenAI
-   - **Extraction model** — defaults to `openai/gpt-5-mini`; change to any [LiteLLM-compatible](https://docs.litellm.ai/docs/providers) model
+   - **Extraction model** — defaults to `openai/gpt-5.4-mini`; change to any [LiteLLM-compatible](https://docs.litellm.ai/docs/providers) model
 4. Click **Install** — all MCP servers start automatically
 
 ### What makes it different
@@ -216,7 +216,7 @@ Both `EMBEDDING_MODEL` and `EXTRACTION_MODEL` accept any [LiteLLM-compatible](ht
 
 ```env
 EMBEDDING_MODEL=text-embedding-3-small
-EXTRACTION_MODEL=gpt-5-mini
+EXTRACTION_MODEL=gpt-5.4-mini
 ```
 
 Fast, high quality, requires an OpenAI API key.
@@ -246,7 +246,7 @@ ollama pull qwen3:8b
 | Vision extraction         | `qwen3.5:9b`       | 6.6 GB | For `page_image` parse mode on slides/diagrams   |
 
 
-**Tradeoffs vs cloud models:** Local extraction is slower due to sequential processing (expect 15–45 min per 100 chunks vs ~2 min with `gpt-5-mini`). Quality-wise, `qwen3:8b` matches cloud models for simple entity extraction, but `phi4-mini` misses relationships.
+**Tradeoffs vs cloud models:** Local extraction is slower due to sequential processing (expect 15–45 min per 100 chunks vs ~2 min with `gpt-5.4-mini`). Quality-wise, `qwen3:8b` matches cloud models for simple entity extraction, but `phi4-mini` misses relationships.
 
 ### Other providers
 

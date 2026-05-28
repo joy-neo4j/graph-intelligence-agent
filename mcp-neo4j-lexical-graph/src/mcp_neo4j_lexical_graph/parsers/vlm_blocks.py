@@ -659,7 +659,7 @@ class VLMBlocksParser(BaseParser):
 
     def __init__(
         self,
-        vlm_model: str = "gpt-5-mini",
+        vlm_model: str = "gpt-5.4-mini",
         max_parallel: int = 10,
     ):
         self.vlm_model = vlm_model

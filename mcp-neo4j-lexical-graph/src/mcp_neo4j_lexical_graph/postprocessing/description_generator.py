@@ -175,7 +175,7 @@ async def fetch_chunks_needing_descriptions(
 
 async def generate_description_for_chunk(
     chunk_info: dict[str, Any],
-    model: str = "gpt-5-mini",
+    model: str = "gpt-5.4-mini",
     max_retries: int = 3,
 ) -> str | None:
     """Generate a text description for a single image/table chunk using VLM.
@@ -292,7 +292,7 @@ async def generate_descriptions_batch(
     driver: AsyncDriver,
     database: str,
     document_id: str,
-    model: str = "gpt-5-mini",
+    model: str = "gpt-5.4-mini",
     parallel: int = 5,
 ) -> dict[str, Any]:
     """Generate descriptions for all visual nodes in a document.

@@ -34,7 +34,7 @@ from .models import (
 
 logger = structlog.get_logger()
 
-DEFAULT_EXTRACTION_MODEL = "gpt-5-mini"
+DEFAULT_EXTRACTION_MODEL = "gpt-5.4-mini"
 
 
 def build_system_prompt(schema: ExtractionSchema) -> str:

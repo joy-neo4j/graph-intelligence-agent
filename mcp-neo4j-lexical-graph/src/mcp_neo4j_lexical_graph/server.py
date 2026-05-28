@@ -93,7 +93,7 @@ _TIME_PER_PAGE: dict[str, float] = {
 _WARNING_THRESHOLD_SECONDS = 120
 
 
-DEFAULT_EXTRACTION_MODEL = "gpt-5-mini"
+DEFAULT_EXTRACTION_MODEL = "gpt-5.4-mini"
 
 
 def _suggest_max_workers() -> int:
@@ -1751,7 +1751,7 @@ async def _run_job(
     output_dir: str,
     document_id: Optional[str],
     parse_kwargs: dict[str, Any],
-    extraction_model: str = "gpt-5-mini",
+    extraction_model: str = "gpt-5.4-mini",
     max_parallel: int = 1,
 ) -> None:
     """Background task that orchestrates parallel-parse, sequential-write processing.

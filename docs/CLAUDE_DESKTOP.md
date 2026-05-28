@@ -8,7 +8,7 @@
    - **Documents DB** — URI, username, password, database name (e.g. `neo4j`)
    - **Ontology DB** — URI, username, password, database name (e.g. `neo4j` on Aura, `ontology` on Neo4j Desktop). Leave URI/username/password blank to reuse the Documents DB credentials.
    - **OpenAI API key** — for embeddings; also used for extraction if your extraction model is OpenAI
-   - **Extraction model** — defaults to `openai/gpt-5-mini`; change to any [LiteLLM-compatible](https://docs.litellm.ai/docs/providers) model
+   - **Extraction model** — defaults to `openai/gpt-5.4-mini`; change to any [LiteLLM-compatible](https://docs.litellm.ai/docs/providers) model
 4. Click **Install** — all MCP servers start automatically
 
 > **Prerequisites:** [uv](https://docs.astral.sh/uv/) installed, two Neo4j databases (Documents + Ontology), and an LLM API key. See the [README](../README.md#claude-desktop) for the full prerequisite list and platform-specific `uv` install instructions.

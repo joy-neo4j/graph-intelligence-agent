@@ -2,7 +2,7 @@
 
 Fixes Docling's flat level=1 sections by assigning appropriate heading
 levels based on section titles. Two modes:
-  - LLM mode (default): asks gpt-5-mini (medium reasoning) to infer levels.
+  - LLM mode (default): asks gpt-5.4-mini (medium reasoning) to infer levels.
   - Agent mode: the calling agent provides explicit levels, skipping the LLM.
 
 After assignment, rebuilds HAS_SUBSECTION relationships and propagates
@@ -68,7 +68,7 @@ class HierarchyOutput(BaseModel):
 async def infer_hierarchy_from_llm(
     sections: list[dict[str, Any]],
     document_name: str,
-    model: str = "gpt-5-mini",
+    model: str = "gpt-5.4-mini",
     max_retries: int = 3,
 ) -> dict[str, int]:
     """Ask LLM to assign heading levels to section titles.
@@ -340,7 +340,7 @@ async def assign_section_hierarchy(
     database: str,
     document_id: str,
     document_name: str,
-    model: str = "gpt-5-mini",
+    model: str = "gpt-5.4-mini",
     hierarchy: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Full orchestration: infer or apply levels -> update -> rebuild rels -> heading chains -> propagate.
