@@ -249,7 +249,9 @@ async def generate_description_for_chunk(
 
     model_lower = model.lower()
     if "gpt-5" in model_lower:
-        api_params["reasoning_effort"] = "minimal"
+        # "low" is accepted across the gpt-5 family (incl. gpt-5.4, which
+        # dropped "minimal" from its allowed reasoning_effort values).
+        api_params["reasoning_effort"] = "low"
     elif "o1" in model_lower or "o3" in model_lower:
         pass
     else:
