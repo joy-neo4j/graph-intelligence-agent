@@ -242,4 +242,5 @@ outputs/schemas/*
 # Demo artifacts — committed as single source of truth
 !outputs/DEMO.md
 !outputs/*.excalidraw
+!outputs/Graph_Intelligence_Technical_DeepDive.md
 
