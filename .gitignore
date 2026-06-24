@@ -239,4 +239,7 @@ outputs/queries/*
 outputs/reports/*
 outputs/schemas/*
 !outputs/**/.gitkeep
+# Demo artifacts — committed as single source of truth
+!outputs/DEMO.md
+!outputs/*.excalidraw
 
