@@ -8,22 +8,28 @@ Supports four parsing strategies (PyMuPDF, Docling, page-image, VLM block orderi
 
 ```mermaid
 graph LR
-    Doc[Document] -->|HAS_PAGE| Page
-    Doc -->|HAS_ELEMENT| Img[Image]
-    Doc -->|HAS_ELEMENT| Tbl[Table]
-    Doc -->|HAS_SECTION| Sec[Section]
-    Sec -->|HAS_SUBSECTION| Sec
-    Chunk -->|PART_OF| Doc
-    Chunk -->|NEXT_CHUNK| Chunk
-    Chunk -->|HAS_ELEMENT| Img
-    Chunk -->|HAS_ELEMENT| Tbl
-    Page -->|NEXT_PAGE| Page
+    Doc["Document"] -->|"HAS_PAGE"| Page["Page"]
+    Doc -->|"HAS_SECTION"| Sec["Section"]
+    Sec -.->|"SUBSECTION"| Sec
+    Chunk["Chunk"] -->|"PART_OF"| Doc
+    Chunk -.->|"NEXT"| Chunk
+    Chunk -->|"HAS_ELEMENT"| Img["Image"]
+    Chunk -->|"HAS_ELEMENT"| Tbl["Table"]
+    Page -.->|"NEXT"| Page
     style Doc fill:#005073,stroke:#002B43,color:#fff
     style Page fill:#dbe4ff,stroke:#005073,color:#1e1e1e
-    style Sec fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
-    style Chunk fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    style Sec fill:#1098ad,stroke:#005073,color:#fff
+    style Chunk fill:#2f9e44,stroke:#145439,color:#fff
     style Img fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
-    style Tbl fill:#fff9db,stroke:#f59f00,color:#1e1e1e
+    style Tbl fill:#fff9db,stroke:#c07a00,color:#1e1e1e
+    linkStyle 0 stroke:#005073,stroke-width:2px
+    linkStyle 1 stroke:#1098ad,stroke-width:2px
+    linkStyle 2 stroke:#1098ad,stroke-width:1.5px,stroke-dasharray:3
+    linkStyle 3 stroke:#2f9e44,stroke-width:2px
+    linkStyle 4 stroke:#2f9e44,stroke-width:1.5px,stroke-dasharray:3
+    linkStyle 5 stroke:#f59f00,stroke-width:2px
+    linkStyle 6 stroke:#c07a00,stroke-width:2px
+    linkStyle 7 stroke:#005073,stroke-width:1.5px,stroke-dasharray:3
 ```
 
 Node types depend on the parse mode used. See [Parse Modes](#parse-modes) below.

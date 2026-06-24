@@ -82,6 +82,10 @@ graph LR
     style LLM fill:#f3d9fa,stroke:#9c36b5,color:#1e1e1e
     style K fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
     style A fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    linkStyle 0 stroke:#1098ad,stroke-width:2px
+    linkStyle 1 stroke:#c92a2a,stroke-width:2px
+    linkStyle 2 stroke:#9c36b5,stroke-width:2px
+    linkStyle 3 stroke:#c92a2a,stroke-width:2px
 ```
 
 **The limited levers problem** — you can improve:
@@ -101,26 +105,31 @@ These require **traversal across connected entities** — not similarity search.
 ## What graph intelligence changes
 
 ```mermaid
-graph LR
-    subgraph Before["Vector RAG"]
+graph TB
+    subgraph Before["❌  Vector RAG — isolated chunks"]
         B1["Chunk"] & B2["Chunk"] & B3["Chunk"]
     end
-    subgraph After["Graph Intelligence"]
-        Counsel -->|HAS_DEFENDANT_COUNSEL| Judgment
-        Judgment -->|HAS_DEFENDANT| Party
-        Judgment -->|CITES| Legislation
-        Counsel -->|EXTRACTED_FROM| Chunk["Source Chunk"]
+    subgraph After["✅  Graph Intelligence — connected knowledge"]
+        direction LR
+        Counsel -->|"DEFENDANT_COUNSEL"| Judgment
+        Judgment -->|"HAS_DEFENDANT"| Party
+        Judgment -->|"CITES"| Legislation
+        Counsel -. "EXTRACTED_FROM" .-> Chunk["Source Chunk"]
     end
     style Before fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
     style After fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
-    style B1 fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
-    style B2 fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
-    style B3 fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
-    style Counsel fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style B1 fill:#c92a2a,stroke:#922020,color:#fff
+    style B2 fill:#c92a2a,stroke:#922020,color:#fff
+    style B3 fill:#c92a2a,stroke:#922020,color:#fff
+    style Counsel fill:#145439,stroke:#0d3a26,color:#fff
     style Judgment fill:#005073,stroke:#002B43,color:#fff
     style Party fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
-    style Legislation fill:#fff9db,stroke:#f59f00,color:#1e1e1e
+    style Legislation fill:#fff9db,stroke:#c07a00,color:#1e1e1e
     style Chunk fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    linkStyle 0 stroke:#005073,stroke-width:2px
+    linkStyle 1 stroke:#f59f00,stroke-width:2px
+    linkStyle 2 stroke:#c07a00,stroke-width:2px
+    linkStyle 3 stroke:#9c36b5,stroke-width:1.5px,stroke-dasharray:4
 ```
 
 **The shift:** from finding *similar text* to traversing *connected knowledge*
@@ -259,13 +268,19 @@ flowchart LR
     S2 --> S3["4 · Load<br/>sample docs<br/>structured + lexical"]
     S3 --> S4["5 · Extract<br/>entities +<br/>relationships"]
     S4 --> S5["6 · Validate<br/>answer Qs<br/>check quality"]
-    S5 -.->|"grow schema · data<br/>· questions"| S2
+    S5 -.->|"iterate"| S2
     style S0 fill:#dbe4ff,stroke:#005073,color:#1e1e1e
     style S1 fill:#f3d9fa,stroke:#9c36b5,color:#1e1e1e
     style S2 fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
     style S3 fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
     style S4 fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
     style S5 fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    linkStyle 0 stroke:#005073,stroke-width:2px
+    linkStyle 1 stroke:#f59f00,stroke-width:2px
+    linkStyle 2 stroke:#1098ad,stroke-width:2px
+    linkStyle 3 stroke:#c92a2a,stroke-width:2px
+    linkStyle 4 stroke:#2f9e44,stroke-width:2px
+    linkStyle 5 stroke:#c92a2a,stroke-width:1.5px,stroke-dasharray:4
 ```
 
 **Start small on every dimension** — then grow once each layer is validated:
@@ -336,18 +351,24 @@ When the document structure itself carries meaning — section hierarchy, readin
 ```mermaid
 graph TD
     Doc["Document<br/>source · date · metadata"] --> Page["Page<br/>number · dimensions"]
-    Page --> Sec["Section<br/>title · level · hierarchy"]
-    Sec --> C1["Chunk<br/>text · position · bounding box"]
-    C1 -.->|NEXT_CHUNK| C2["Chunk"]
-    Sec --> Tbl["Table<br/>imageBase64 · caption<br/>structured data"]
-    Sec --> Img["Image<br/>imageBase64 · caption<br/>VLM description"]
+    Doc --> Sec["Section<br/>title · level · hierarchy"]
+    Sec --> C1["Chunk<br/>text · position"]
+    C1 -.->|next| C2["Chunk"]
+    Sec --> Tbl["Table<br/>imageBase64 · caption"]
+    Sec --> Img["Image<br/>imageBase64 · VLM desc"]
     style Doc fill:#005073,stroke:#002B43,color:#fff
     style Page fill:#dbe4ff,stroke:#005073,color:#1e1e1e
-    style Sec fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
-    style C1 fill:#dbe4ff,stroke:#005073,color:#1e1e1e
-    style C2 fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Sec fill:#1098ad,stroke:#005073,color:#fff
+    style C1 fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    style C2 fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
     style Tbl fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
-    style Img fill:#fff9db,stroke:#f59f00,color:#1e1e1e
+    style Img fill:#fff9db,stroke:#c07a00,color:#1e1e1e
+    linkStyle 0 stroke:#005073,stroke-width:2px
+    linkStyle 1 stroke:#1098ad,stroke-width:2px
+    linkStyle 2 stroke:#2f9e44,stroke-width:2px
+    linkStyle 3 stroke:#2f9e44,stroke-width:1.5px,stroke-dasharray:4
+    linkStyle 4 stroke:#f59f00,stroke-width:2px
+    linkStyle 5 stroke:#c07a00,stroke-width:2px
 ```
 
 </div>
@@ -399,13 +420,16 @@ graph TD
 
 ```mermaid
 flowchart LR
-    El["Element<br/>table · image · diagram<br/>formula · complex page"] -->|extract| N["Node<br/>imageBase64<br/>raw text · caption"]
-    N -->|"+ doc title · section<br/>caption · position"| VLM["VLM description<br/>→ textDescription"]
-    VLM --> Idx["Unified index<br/>embed: COALESCE(textDescription, text)<br/>fulltext: on extracted text"]
+    El["Element<br/>table · image · diagram"] -->|"extract"| N["Node<br/>imageBase64 · caption"]
+    N -->|"+ context metadata"| VLM["VLM<br/>→ textDescription"]
+    VLM -->|"embed"| Idx["Unified Index<br/>COALESCE(textDescription, text)"]
     style El fill:#dbe4ff,stroke:#005073,color:#1e1e1e
     style N fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
     style VLM fill:#9c36b5,stroke:#7a1fa2,color:#fff
     style Idx fill:#145439,stroke:#0d3a26,color:#fff
+    linkStyle 0 stroke:#1098ad,stroke-width:2px
+    linkStyle 1 stroke:#9c36b5,stroke-width:2px
+    linkStyle 2 stroke:#145439,stroke-width:2px
 ```
 
 **Retrieval options:**
@@ -427,18 +451,24 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    S["Structured data<br/>SQL · CSV · CRM"] -->|"direct import"| SN["Structured nodes<br/>+ relationships"]
-    D["Documents<br/>PDFs · emails · reports"] -->|"parse + chunk"| LG["Lexical graph<br/>Document → Chunk"]
-    LG -->|"entity extraction<br/>LLM + schema"| EN["Extracted entities<br/>+ relationships"]
-    EN -->|"MERGE on shared key"| SN
+    S["Structured data<br/>SQL · CSV · CRM"] -->|"import"| SN["Structured nodes"]
+    D["Documents<br/>PDFs · emails"] -->|"parse + chunk"| LG["Lexical graph<br/>Document → Chunk"]
+    LG -->|"LLM extraction"| EN["Extracted entities"]
+    EN -->|"MERGE"| SN
     EN --> KG
     SN --> KG[("Knowledge Graph")]
     style S fill:#dbe4ff,stroke:#005073,color:#1e1e1e
     style D fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
-    style SN fill:#dbe4ff,stroke:#005073,color:#1e1e1e
-    style LG fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
-    style EN fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    style SN fill:#005073,stroke:#002B43,color:#fff
+    style LG fill:#1098ad,stroke:#005073,color:#fff
+    style EN fill:#2f9e44,stroke:#145439,color:#fff
     style KG fill:#014063,color:#fff,stroke:#002B43
+    linkStyle 0 stroke:#005073,stroke-width:2px
+    linkStyle 1 stroke:#1098ad,stroke-width:2px
+    linkStyle 2 stroke:#2f9e44,stroke-width:2px
+    linkStyle 3 stroke:#f59f00,stroke-width:2px
+    linkStyle 4 stroke:#2f9e44,stroke-width:2px
+    linkStyle 5 stroke:#005073,stroke-width:2px
 ```
 
 - **Structured data** loads directly as typed graph nodes — relationships already defined
@@ -463,17 +493,33 @@ flowchart LR
 
 ```mermaid
 graph LR
-    C["Chunk<br/>raw text"] --> LLM["LLM + Pydantic Schema<br/>structured extraction"]
-    LLM --> Judgment["Judgment"]
-    LLM --> Counsel["Counsel"]
-    LLM --> Rel["HAS_DEFENDANT_COUNSEL<br/>relationship"]
-    Judgment --> |EXTRACTED_FROM| C
-    Counsel --> |EXTRACTED_FROM| C
+    subgraph Input["Input"]
+        C["Chunk · raw text"]
+    end
+    subgraph Extracted["Extracted (→ Neo4j)"]
+        Judgment["Judgment"]
+        Counsel["Counsel"]
+        Rel["HAS_DEFENDANT_COUNSEL"]
+    end
+    C --> LLM["LLM<br/>+ Pydantic Schema"]
+    LLM --> Judgment
+    LLM --> Counsel
+    LLM --> Rel
+    Judgment -. "EXTRACTED_FROM" .-> C
+    Counsel -. "EXTRACTED_FROM" .-> C
+    style Input fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Extracted fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
     style C fill:#dbe4ff,stroke:#005073,color:#1e1e1e
     style LLM fill:#7950f2,stroke:#5f3dc4,color:#fff
     style Judgment fill:#005073,stroke:#002B43,color:#fff
     style Counsel fill:#145439,stroke:#0d3a26,color:#fff
-    style Rel fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style Rel fill:#fff3e0,stroke:#c07a00,color:#1e1e1e
+    linkStyle 0 stroke:#7950f2,stroke-width:2px
+    linkStyle 1 stroke:#005073,stroke-width:2px
+    linkStyle 2 stroke:#145439,stroke-width:2px
+    linkStyle 3 stroke:#c07a00,stroke-width:2px
+    linkStyle 4 stroke:#9c36b5,stroke-width:1.5px,stroke-dasharray:4
+    linkStyle 5 stroke:#9c36b5,stroke-width:1.5px,stroke-dasharray:4
 ```
 
 **What happens during extraction:**
@@ -489,23 +535,34 @@ graph LR
 ## The entity graph — entities + relationships + provenance
 
 ```mermaid
-graph TD
+graph LR
     subgraph Entity["Entity Graph — extracted knowledge"]
-        Judgment["Judgment<br/>[2026] EWHC 456 (Comm)"] -->|HAS_DEFENDANT| Party["Party<br/>Russian Federation"]
-        Judgment -->|HAS_DEFENDANT_COUNSEL| Counsel["Counsel<br/>Vernon Flynn KC"]
-        Judgment -->|HAS_DEFENDANT_FIRM| Firm["LawFirm<br/>Pinna Goldberg Ltd"]
-        Judgment -->|CONCERNS| Topic["LegalTopic<br/>arbitral award enforcement"]
+        direction TB
+        Judgment["Judgment<br/>[2026] EWHC 456"] -->|"HAS_DEFENDANT"| Party["Party<br/>Russian Federation"]
+        Judgment -->|"COUNSEL"| Counsel["Counsel<br/>Vernon Flynn KC"]
+        Judgment -->|"HAS_FIRM"| Firm["LawFirm<br/>Pinna Goldberg Ltd"]
+        Judgment -->|"CONCERNS"| Topic["LegalTopic<br/>award enforcement"]
     end
-    Judgment -->|EXTRACTED_FROM| C["Chunk<br/>(lexical graph)"]
-    Counsel -->|EXTRACTED_FROM| C
-    C -->|PART_OF| Doc["Document<br/>ewhc_comm_2026_456.pdf"]
+    subgraph Provenance["Lexical Graph — provenance"]
+        direction LR
+        C["Chunk"] -->|"PART_OF"| Doc["Document<br/>ewhc_comm_2026_456.pdf"]
+    end
+    Entity -. "EXTRACTED_FROM" .-> Provenance
     style Judgment fill:#005073,stroke:#002B43,color:#fff
     style Party fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
     style Counsel fill:#145439,stroke:#0d3a26,color:#fff
     style Firm fill:#9c36b5,stroke:#7a1fa2,color:#fff
     style Topic fill:#1098ad,stroke:#005073,color:#fff
-    style C fill:#dbe4ff,stroke:#005073,color:#1e1e1e
-    style Doc fill:#e9ecef,stroke:#005073,color:#1e1e1e
+    style C fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    style Doc fill:#e9ecef,stroke:#495057,color:#1e1e1e
+    style Entity fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Provenance fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    linkStyle 0 stroke:#f59f00,stroke-width:2px
+    linkStyle 1 stroke:#145439,stroke-width:2px
+    linkStyle 2 stroke:#9c36b5,stroke-width:2px
+    linkStyle 3 stroke:#1098ad,stroke-width:2px
+    linkStyle 4 stroke:#2f9e44,stroke-width:2px
+    linkStyle 5 stroke:#9c36b5,stroke-width:1.5px,stroke-dasharray:4
 ```
 
 **Every entity is traceable.** Any answer the AI gives can be followed back to the exact source text, section, and document — without any post-hoc explanation.
@@ -533,29 +590,33 @@ Before graph intelligence, these questions required a human analyst:
 ## Three layers — one knowledge graph
 
 ```mermaid
-graph TD
-    subgraph S["Layer 3 · Structured data — direct import"]
-        SR["Barrister Registry<br/>chambers · KC year · specialisms"]
+graph LR
+    subgraph S["Layer 3 · Structured"]
+        SR["Barrister Registry<br/>chambers · KC year"]
     end
-    subgraph E["Layer 2 · Entity graph — extracted knowledge"]
-        Counsel["Counsel<br/>Vernon Flynn KC"] -->|HAS_DEFENDANT_COUNSEL| Judgment["Judgment<br/>[2026] EWHC 456"]
-        Judgment -->|HAS_DEFENDANT| Party["Party<br/>Russian Federation"]
+    subgraph E["Layer 2 · Entity Graph"]
+        Counsel["Counsel<br/>Vernon Flynn KC"] -->|"COUNSEL"| Judgment["Judgment<br/>[2026] EWHC 456"]
+        Judgment -->|"HAS_DEFENDANT"| Party["Party<br/>Russian Federation"]
     end
-    subgraph L["Layer 1 · Lexical graph — document provenance"]
-        C["Chunk"] -->|PART_OF| Doc["Document<br/>ewhc_comm_2026_456.pdf"]
+    subgraph L["Layer 1 · Lexical Graph"]
+        C["Chunk"] -->|"PART_OF"| Doc["Document"]
     end
-    SR -->|enriches| Counsel
-    Counsel -->|EXTRACTED_FROM| C
-    Judgment -->|EXTRACTED_FROM| C
+    SR -->|"enriches"| Counsel
+    E -. "EXTRACTED_FROM" .-> L
     style S fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
     style E fill:#dbe4ff,stroke:#005073,color:#1e1e1e
     style L fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
     style SR fill:#145439,stroke:#0d3a26,color:#fff
     style Counsel fill:#005073,stroke:#002B43,color:#fff
-    style Judgment fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Judgment fill:#1098ad,stroke:#005073,color:#fff
     style Party fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
-    style C fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
-    style Doc fill:#e9ecef,stroke:#1098ad,color:#1e1e1e
+    style C fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    style Doc fill:#e9ecef,stroke:#495057,color:#1e1e1e
+    linkStyle 0 stroke:#005073,stroke-width:2px
+    linkStyle 1 stroke:#f59f00,stroke-width:2px
+    linkStyle 2 stroke:#2f9e44,stroke-width:2px
+    linkStyle 3 stroke:#2f9e44,stroke-width:2px
+    linkStyle 4 stroke:#9c36b5,stroke-width:1.5px,stroke-dasharray:4
 ```
 
 **Layer 1 — Lexical graph:** document structure and provenance · every chunk traces back to its source
@@ -679,16 +740,22 @@ This is your **golden dataset** — the measure of everything:
 flowchart LR
     Q["Target Questions<br/>10–20 defined"] --> S["MVG Schema<br/>3–5 entity types"]
     S --> E["Extract Sample<br/>100–500 chunks"]
-    E --> V["Validate<br/>counts · orphans · Q&A"]
+    E --> V["Validate<br/>counts · Q&A"]
     V --> A{Quality OK?}
-    A -->|refine| S
-    A -->|sufficient| Scale["Scale to<br/>full corpus"]
+    A -->|"refine"| S
+    A -->|"sufficient"| Scale["Scale to<br/>full corpus"]
     style Q fill:#dbe4ff,stroke:#005073,color:#1e1e1e
     style S fill:#f3d9fa,stroke:#9c36b5,color:#1e1e1e
     style E fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
     style V fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
     style A fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
     style Scale fill:#145439,stroke:#0d3a26,color:#fff
+    linkStyle 0 stroke:#005073,stroke-width:2px
+    linkStyle 1 stroke:#f59f00,stroke-width:2px
+    linkStyle 2 stroke:#1098ad,stroke-width:2px
+    linkStyle 3 stroke:#c92a2a,stroke-width:2px
+    linkStyle 4 stroke:#c92a2a,stroke-width:1.5px,stroke-dasharray:4
+    linkStyle 5 stroke:#145439,stroke-width:2px
 ```
 
 **MVG principle:** one use case · 3–5 entity types · prove it works · then expand.
@@ -746,13 +813,16 @@ Adding entity types incrementally is cheaper than reworking a bloated schema.
 
 ```mermaid
 flowchart LR
-    P["create_lexical_graph<br/>parse mode · table/image extract"] --> C["chunk_lexical_graph<br/>docling + page_image only"]
+    P["create_lexical_graph<br/>parse · table · image"] --> C["chunk_lexical_graph<br/>docling / page_image"]
     C --> G["generate_chunk_descriptions<br/>VLM for tables + images"]
-    G --> Em["embed_chunks<br/>unified index<br/>text + VLM descriptions"]
+    G --> Em["embed_chunks<br/>unified vector index"]
     style P fill:#dbe4ff,stroke:#005073,color:#1e1e1e
-    style C fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
-    style G fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style C fill:#1098ad,stroke:#005073,color:#fff
+    style G fill:#f59f00,stroke:#c07a00,color:#1e1e1e
     style Em fill:#145439,stroke:#0d3a26,color:#fff
+    linkStyle 0 stroke:#1098ad,stroke-width:2px
+    linkStyle 1 stroke:#f59f00,stroke-width:2px
+    linkStyle 2 stroke:#145439,stroke-width:2px
 ```
 
 **Key details:**
@@ -798,18 +868,24 @@ class CounselEntity(BaseModel):
 
 ```mermaid
 flowchart LR
-    Sch["Pydantic Schema<br/>entities + validators"] --> Ex["extract_entities<br/>async · LiteLLM provider"]
-    Ex --> Val["Validate<br/>counts · orphans<br/>duplicates · links"]
-    Val --> Q["Answer target\nquestions — quality?"]
-    Q --> Fix["Identify gaps:<br/>missing entities<br/>duplicate nodes<br/>low relationship coverage"]
-    Fix -.->|refine schema| Sch
-    Q -->|sufficient| Done["Scale to full corpus"]
+    Sch["Pydantic Schema<br/>entities + validators"] --> Ex["extract_entities<br/>async · LiteLLM"]
+    Ex --> Val["Validate<br/>counts · orphans · links"]
+    Val --> Q{"Quality?"}
+    Q --> Fix["Identify gaps:<br/>missing entities<br/>duplicates"]
+    Fix -.->|"refine"| Sch
+    Q -->|"sufficient"| Done["Scale to<br/>full corpus"]
     style Sch fill:#f3d9fa,stroke:#9c36b5,color:#1e1e1e
-    style Ex fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Ex fill:#005073,stroke:#002B43,color:#fff
     style Val fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
-    style Q fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style Q fill:#1098ad,stroke:#005073,color:#fff
     style Fix fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
     style Done fill:#145439,stroke:#0d3a26,color:#fff
+    linkStyle 0 stroke:#005073,stroke-width:2px
+    linkStyle 1 stroke:#f59f00,stroke-width:2px
+    linkStyle 2 stroke:#1098ad,stroke-width:2px
+    linkStyle 3 stroke:#c92a2a,stroke-width:2px
+    linkStyle 4 stroke:#c92a2a,stroke-width:1.5px,stroke-dasharray:4
+    linkStyle 5 stroke:#145439,stroke-width:2px
 ```
 
 **What each gap tells you:**
@@ -912,23 +988,48 @@ Also includes: entity counts · gap analysis · recommended next steps for the f
 ## The graph data model — Opposing Counsel
 
 ```mermaid
-graph TD
-    Judgment["⚖️ Judgment<br/>neutralCitation · caseName · outcome"] -->|PRESIDED_BY| Judge["👨‍⚖️ Judge"]
-    Judgment -->|HAS_CLAIMANT| Party["🏢 Party<br/>partyType: sovereign / corp"]
-    Judgment -->|HAS_DEFENDANT| Party
-    Judgment -->|HAS_CLAIMANT_COUNSEL| Counsel["👤 Counsel<br/>name · isKc · chambers · kcYear"]
-    Judgment -->|HAS_DEFENDANT_COUNSEL| Counsel
-    Judgment -->|HAS_CLAIMANT_FIRM| LawFirm["🏛️ LawFirm<br/>name · firmType · arbitrationTier"]
-    Judgment -->|HAS_DEFENDANT_FIRM| LawFirm
-    Judgment -->|CONCERNS| LegalTopic["🏷️ LegalTopic<br/>30 canonical terms"]
-    Judgment -->|CITES| Legislation["📜 Legislation<br/>name · url · jurisdiction"]
-    style Judgment fill:#005073,stroke:#002B43,color:#fff
-    style Judge fill:#1098ad,stroke:#005073,color:#fff
-    style Party fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
-    style Counsel fill:#145439,stroke:#0d3a26,color:#fff
-    style LawFirm fill:#9c36b5,stroke:#7a1fa2,color:#fff
-    style LegalTopic fill:#dbe4ff,stroke:#005073,color:#1e1e1e
-    style Legislation fill:#fff9db,stroke:#f59f00,color:#1e1e1e
+graph LR
+    J["⚖️ Judgment<br/>neutralCitation · outcome"]
+    subgraph Claimant["Claimant Side"]
+        CP["🏢 Party"]
+        CC["👤 Counsel"]
+        CF["🏛️ LawFirm"]
+    end
+    subgraph Defendant["Defendant Side"]
+        DP["🏢 Party"]
+        DC["👤 Counsel"]
+        DF["🏛️ LawFirm"]
+    end
+    J -->|"PRESIDED_BY"| Jdg["👨‍⚖️ Judge"]
+    J -->|"HAS_CLAIMANT"| CP
+    J -->|"COUNSEL"| CC
+    J -->|"FIRM"| CF
+    J -->|"HAS_DEFENDANT"| DP
+    J -->|"COUNSEL"| DC
+    J -->|"FIRM"| DF
+    J -->|"CONCERNS"| LT["🏷️ LegalTopic<br/>30 canonical"]
+    J -->|"CITES"| Leg["📜 Legislation<br/>url · jurisdiction"]
+    style J fill:#005073,stroke:#002B43,color:#fff
+    style Jdg fill:#1098ad,stroke:#005073,color:#fff
+    style CP fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style CC fill:#145439,stroke:#0d3a26,color:#fff
+    style CF fill:#9c36b5,stroke:#7a1fa2,color:#fff
+    style DP fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    style DC fill:#2f9e44,stroke:#145439,color:#fff
+    style DF fill:#7950f2,stroke:#5f3dc4,color:#fff
+    style LT fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Leg fill:#fff9db,stroke:#c07a00,color:#1e1e1e
+    style Claimant fill:#e8f8f0,stroke:#2f9e44,color:#1e1e1e
+    style Defendant fill:#fef2f2,stroke:#c92a2a,color:#1e1e1e
+    linkStyle 0 stroke:#1098ad,stroke-width:2px
+    linkStyle 1 stroke:#2f9e44,stroke-width:2px
+    linkStyle 2 stroke:#145439,stroke-width:2px
+    linkStyle 3 stroke:#9c36b5,stroke-width:2px
+    linkStyle 4 stroke:#c92a2a,stroke-width:2px
+    linkStyle 5 stroke:#2f9e44,stroke-width:2px
+    linkStyle 6 stroke:#7950f2,stroke-width:2px
+    linkStyle 7 stroke:#005073,stroke-width:2px
+    linkStyle 8 stroke:#c07a00,stroke-width:2px
 ```
 
 **7 node types · 9 relationship types · all enriched via CSV bridge nodes**
