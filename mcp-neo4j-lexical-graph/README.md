@@ -18,6 +18,12 @@ graph LR
     Chunk -->|HAS_ELEMENT| Img
     Chunk -->|HAS_ELEMENT| Tbl
     Page -->|NEXT_PAGE| Page
+    style Doc fill:#005073,stroke:#002B43,color:#fff
+    style Page fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Sec fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style Chunk fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    style Img fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style Tbl fill:#fff9db,stroke:#f59f00,color:#1e1e1e
 ```
 
 Node types depend on the parse mode used. See [Parse Modes](#parse-modes) below.

@@ -77,8 +77,11 @@ graph LR
     VS --> K["Top-k Chunks<br/>disconnected fragments"]
     K --> LLM["LLM<br/>synthesize answer"]
     LLM --> A["Answer<br/>(possibly wrong)"]
-    style K fill:#FDE8E2,stroke:#D43300
-    style A fill:#FDE8E2,stroke:#D43300
+    style Q fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style VS fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style LLM fill:#f3d9fa,stroke:#9c36b5,color:#1e1e1e
+    style K fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    style A fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
 ```
 
 **The limited levers problem** — you can improve:
@@ -108,8 +111,16 @@ graph LR
         Judgment -->|CITES| Legislation
         Counsel -->|EXTRACTED_FROM| Chunk["Source Chunk"]
     end
-    style Before fill:#FDE8E2,stroke:#D43300
-    style After fill:#D6ECD8,stroke:#145439
+    style Before fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    style After fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    style B1 fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    style B2 fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    style B3 fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    style Counsel fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Judgment fill:#005073,stroke:#002B43,color:#fff
+    style Party fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style Legislation fill:#fff9db,stroke:#f59f00,color:#1e1e1e
+    style Chunk fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
 ```
 
 **The shift:** from finding *similar text* to traversing *connected knowledge*
@@ -249,8 +260,12 @@ flowchart LR
     S3 --> S4["5 · Extract<br/>entities +<br/>relationships"]
     S4 --> S5["6 · Validate<br/>answer Qs<br/>check quality"]
     S5 -.->|"grow schema · data<br/>· questions"| S2
-    style S0 fill:#E8F3F8,stroke:#0A6190
-    style S5 fill:#D6ECD8,stroke:#145439
+    style S0 fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style S1 fill:#f3d9fa,stroke:#9c36b5,color:#1e1e1e
+    style S2 fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style S3 fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style S4 fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    style S5 fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
 ```
 
 **Start small on every dimension** — then grow once each layer is validated:
@@ -326,13 +341,13 @@ graph TD
     C1 -.->|NEXT_CHUNK| C2["Chunk"]
     Sec --> Tbl["Table<br/>imageBase64 · caption<br/>structured data"]
     Sec --> Img["Image<br/>imageBase64 · caption<br/>VLM description"]
-    style Doc fill:#E8F3F8,stroke:#0A6190
-    style Page fill:#E8F3F8,stroke:#0A6190
-    style Sec fill:#E8F3F8,stroke:#0A6190
-    style C1 fill:#E8F3F8,stroke:#0A6190
-    style C2 fill:#E8F3F8,stroke:#0A6190
-    style Tbl fill:#FDF0CC,stroke:#C07A00
-    style Img fill:#FDF0CC,stroke:#C07A00
+    style Doc fill:#005073,stroke:#002B43,color:#fff
+    style Page fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Sec fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style C1 fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style C2 fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Tbl fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style Img fill:#fff9db,stroke:#f59f00,color:#1e1e1e
 ```
 
 </div>
@@ -387,9 +402,10 @@ flowchart LR
     El["Element<br/>table · image · diagram<br/>formula · complex page"] -->|extract| N["Node<br/>imageBase64<br/>raw text · caption"]
     N -->|"+ doc title · section<br/>caption · position"| VLM["VLM description<br/>→ textDescription"]
     VLM --> Idx["Unified index<br/>embed: COALESCE(textDescription, text)<br/>fulltext: on extracted text"]
-    style El fill:#E8F3F8,stroke:#0A6190
-    style VLM fill:#E8EAFF,stroke:#6A82FF
-    style Idx fill:#D6ECD8,stroke:#145439
+    style El fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style N fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style VLM fill:#9c36b5,stroke:#7a1fa2,color:#fff
+    style Idx fill:#145439,stroke:#0d3a26,color:#fff
 ```
 
 **Retrieval options:**
@@ -417,10 +433,12 @@ flowchart LR
     EN -->|"MERGE on shared key"| SN
     EN --> KG
     SN --> KG[("Knowledge Graph")]
-    style SN fill:#E8F3F8,stroke:#0A6190
-    style LG fill:#E8F3F8,stroke:#0A6190
-    style EN fill:#D6ECD8,stroke:#145439
-    style KG fill:#014063,color:#FCF9F6,stroke:#002B43
+    style S fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style D fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style SN fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style LG fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style EN fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    style KG fill:#014063,color:#fff,stroke:#002B43
 ```
 
 - **Structured data** loads directly as typed graph nodes — relationships already defined
@@ -451,7 +469,11 @@ graph LR
     LLM --> Rel["HAS_DEFENDANT_COUNSEL<br/>relationship"]
     Judgment --> |EXTRACTED_FROM| C
     Counsel --> |EXTRACTED_FROM| C
-    style LLM fill:#E8EAFF,stroke:#6A82FF
+    style C fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style LLM fill:#7950f2,stroke:#5f3dc4,color:#fff
+    style Judgment fill:#005073,stroke:#002B43,color:#fff
+    style Counsel fill:#145439,stroke:#0d3a26,color:#fff
+    style Rel fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
 ```
 
 **What happens during extraction:**
@@ -477,6 +499,13 @@ graph TD
     Judgment -->|EXTRACTED_FROM| C["Chunk<br/>(lexical graph)"]
     Counsel -->|EXTRACTED_FROM| C
     C -->|PART_OF| Doc["Document<br/>ewhc_comm_2026_456.pdf"]
+    style Judgment fill:#005073,stroke:#002B43,color:#fff
+    style Party fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style Counsel fill:#145439,stroke:#0d3a26,color:#fff
+    style Firm fill:#9c36b5,stroke:#7a1fa2,color:#fff
+    style Topic fill:#1098ad,stroke:#005073,color:#fff
+    style C fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Doc fill:#e9ecef,stroke:#005073,color:#1e1e1e
 ```
 
 **Every entity is traceable.** Any answer the AI gives can be followed back to the exact source text, section, and document — without any post-hoc explanation.
@@ -518,10 +547,15 @@ graph TD
     SR -->|enriches| Counsel
     Counsel -->|EXTRACTED_FROM| C
     Judgment -->|EXTRACTED_FROM| C
-    style S fill:#D6ECD8,stroke:#145439
-    style E fill:#E8F3F8,stroke:#0A6190
-    style L fill:#F0F5F8,stroke:#4C99A4
-    style SR fill:#D6ECD8,stroke:#145439
+    style S fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+    style E fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style L fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style SR fill:#145439,stroke:#0d3a26,color:#fff
+    style Counsel fill:#005073,stroke:#002B43,color:#fff
+    style Judgment fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Party fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style C fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style Doc fill:#e9ecef,stroke:#1098ad,color:#1e1e1e
 ```
 
 **Layer 1 — Lexical graph:** document structure and provenance · every chunk traces back to its source
@@ -649,7 +683,12 @@ flowchart LR
     V --> A{Quality OK?}
     A -->|refine| S
     A -->|sufficient| Scale["Scale to<br/>full corpus"]
-    style Scale fill:#D6ECD8,stroke:#145439
+    style Q fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style S fill:#f3d9fa,stroke:#9c36b5,color:#1e1e1e
+    style E fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style V fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style A fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    style Scale fill:#145439,stroke:#0d3a26,color:#fff
 ```
 
 **MVG principle:** one use case · 3–5 entity types · prove it works · then expand.
@@ -710,8 +749,10 @@ flowchart LR
     P["create_lexical_graph<br/>parse mode · table/image extract"] --> C["chunk_lexical_graph<br/>docling + page_image only"]
     C --> G["generate_chunk_descriptions<br/>VLM for tables + images"]
     G --> Em["embed_chunks<br/>unified index<br/>text + VLM descriptions"]
-    style G fill:#FDF0CC,stroke:#C07A00
-    style Em fill:#D6ECD8,stroke:#145439
+    style P fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style C fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style G fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style Em fill:#145439,stroke:#0d3a26,color:#fff
 ```
 
 **Key details:**
@@ -763,7 +804,12 @@ flowchart LR
     Q --> Fix["Identify gaps:<br/>missing entities<br/>duplicate nodes<br/>low relationship coverage"]
     Fix -.->|refine schema| Sch
     Q -->|sufficient| Done["Scale to full corpus"]
-    style Done fill:#D6ECD8,stroke:#145439
+    style Sch fill:#f3d9fa,stroke:#9c36b5,color:#1e1e1e
+    style Ex fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Val fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style Q fill:#c3fae8,stroke:#1098ad,color:#1e1e1e
+    style Fix fill:#ffe3e3,stroke:#c92a2a,color:#1e1e1e
+    style Done fill:#145439,stroke:#0d3a26,color:#fff
 ```
 
 **What each gap tells you:**
@@ -876,6 +922,13 @@ graph TD
     Judgment -->|HAS_DEFENDANT_FIRM| LawFirm
     Judgment -->|CONCERNS| LegalTopic["🏷️ LegalTopic<br/>30 canonical terms"]
     Judgment -->|CITES| Legislation["📜 Legislation<br/>name · url · jurisdiction"]
+    style Judgment fill:#005073,stroke:#002B43,color:#fff
+    style Judge fill:#1098ad,stroke:#005073,color:#fff
+    style Party fill:#fff3e0,stroke:#f59f00,color:#1e1e1e
+    style Counsel fill:#145439,stroke:#0d3a26,color:#fff
+    style LawFirm fill:#9c36b5,stroke:#7a1fa2,color:#fff
+    style LegalTopic fill:#dbe4ff,stroke:#005073,color:#1e1e1e
+    style Legislation fill:#fff9db,stroke:#f59f00,color:#1e1e1e
 ```
 
 **7 node types · 9 relationship types · all enriched via CSV bridge nodes**
