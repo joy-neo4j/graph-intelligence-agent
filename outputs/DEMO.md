@@ -1,4 +1,5 @@
 # Opposing Counsel
+
 ## Graph-Powered Litigation Intelligence for the Commercial Court
 
 > **One-liner:** A natural language query over 20 approved England & Wales Commercial Court judgments — covering 86 barristers, 39 law firms, 261 parties, 30 canonical legal topics, and 135 statutory provisions — returns structured, sourced answers in seconds.
@@ -26,17 +27,17 @@ Today, that intelligence is assembled manually: a junior lawyer trawling through
 
 **Opposing Counsel** replaces that process with a Neo4j knowledge graph. The demo shows three things Neo4j is uniquely positioned to do:
 
-| Capability | Description | Example |
-|---|---|---|
-| **Multi-hop competitive profiling** | Traverse Firm → Judgment → Party to answer questions that would otherwise require reading a dozen judgments | "Has Quinn Emanuel ever acted against a sovereign state respondent?" |
-| **Pattern detection across a corpus** | Aggregate across the graph to surface standing teams and behavioural patterns invisible in any single document | "Which barristers most often appear together on the defence side?" |
-| **Hybrid retrieval** | Graph provides structured context; vector search retrieves the relevant judgment passage | "What reasoning did the court apply in the Hulley jurisdiction challenge?" |
+| Capability                                  | Description                                                                                                    | Example                                                                    |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Multi-hop competitive profiling**   | Traverse Firm → Judgment → Party to answer questions that would otherwise require reading a dozen judgments  | "Has Quinn Emanuel ever acted against a sovereign state respondent?"       |
+| **Pattern detection across a corpus** | Aggregate across the graph to surface standing teams and behavioural patterns invisible in any single document | "Which barristers most often appear together on the defence side?"         |
+| **Hybrid retrieval**                  | Graph provides structured context; vector search retrieves the relevant judgment passage                       | "What reasoning did the court apply in the Hulley jurisdiction challenge?" |
 
 ---
 
 ## 2. Architecture Overview
 
-> See: [`outputs/opposing_counsel_architecture.excalidraw`](opposing_counsel_architecture.excalidraw)  
+> See: [`outputs/opposing_counsel_architecture.excalidraw`](opposing_counsel_architecture.excalidraw)
 > Open at: [excalidraw.com](https://excalidraw.com) — File → Open — select the `.excalidraw` file
 
 ### Pipeline (PDF → Graph in under 3 minutes)
@@ -83,17 +84,18 @@ Today, that intelligence is assembled manually: a junior lawyer trawling through
 
 Five MCP servers are orchestrated by Claude Code. Each is a local Python service communicating over stdio.
 
-| Server | Role | Key Tools | Source |
-|---|---|---|---|
-| `neo4j-data-modeling` | Design and validate graph schemas | `validate_data_model`, `get_mermaid_config_str` | `uvx mcp-neo4j-data-modeling@0.8.2` |
-| `neo4j-lexical-graph` | PDF → chunks → embeddings | `create_lexical_graph`, `embed_chunks` | Local `mcp-neo4j-lexical-graph/` |
-| `neo4j-entity-graph` | LLM entity extraction | `convert_schema`, `extract_entities` | Local `mcp-neo4j-entity-graph/` |
-| `neo4j-ingest` | Structured CSV ingestion | `ingest_csv_into_neo4j` | Local `mcp-neo4j-ingest/` |
-| `neo4j-graphrag` | Query, search, retrieve | `vector_search`, `fulltext_search`, `read_neo4j_cypher` | Local `mcp-neo4j-graphrag/` |
+| Server                  | Role                              | Key Tools                                                     | Source                                |
+| ----------------------- | --------------------------------- | ------------------------------------------------------------- | ------------------------------------- |
+| `neo4j-data-modeling` | Design and validate graph schemas | `validate_data_model`, `get_mermaid_config_str`           | `uvx mcp-neo4j-data-modeling@0.8.2` |
+| `neo4j-lexical-graph` | PDF → chunks → embeddings       | `create_lexical_graph`, `embed_chunks`                    | Local`mcp-neo4j-lexical-graph/`     |
+| `neo4j-entity-graph`  | LLM entity extraction             | `convert_schema`, `extract_entities`                      | Local`mcp-neo4j-entity-graph/`      |
+| `neo4j-ingest`        | Structured CSV ingestion          | `ingest_csv_into_neo4j`                                     | Local`mcp-neo4j-ingest/`            |
+| `neo4j-graphrag`      | Query, search, retrieve           | `vector_search`, `fulltext_search`, `read_neo4j_cypher` | Local`mcp-neo4j-graphrag/`          |
 
 ### 3.2 GenAI Components
 
 #### Entity Extraction: `gpt-5.4-mini`
+
 - **Purpose:** Reads each 500-token chunk and extracts structured entities conforming to a Pydantic schema
 - **Structured output:** Pydantic v2 `ExtractionOutput` model enforces schema compliance — the LLM cannot hallucinate outside the defined types
 - **Schema (v3):**
@@ -105,6 +107,7 @@ Five MCP servers are orchestrated by Claude Code. Each is a local Python service
 - **Cost estimate:** ~$0.15–0.25 per full extraction pass
 
 #### Embeddings: `text-embedding-3-small`
+
 - **Purpose:** Creates 1536-dimensional vector for each chunk for semantic similarity search
 - **Context enrichment:** Each chunk is embedded as `documentName + sectionContext + chunkText` — the document name is prepended so "Vernon Flynn KC" in chunk 47 of `ewhc_comm_2026_456` is semantically closer to other chunks from that case
 - **Vector index:** `chunk_text_embedding` with `documentName` and `type` prefilter properties (Neo4j 5.18+ `WITH [...]` syntax) — enables filtered vector search without post-filtering overhead
@@ -127,19 +130,19 @@ User Question
 
 **Why graph beats pure vector RAG for this use case:**
 
-| Query pattern | Pure vector | Graph RAG |
-|---|---|---|
-| "Has Quinn Emanuel acted on both sides?" | ❌ Requires reading every mention | ✅ Single `MATCH` traversal |
-| "Which firms instructed on sovereign-state cases?" | ❌ Relation not in text structure | ✅ `HAS_DEFENDANT_FIRM` relationship |
-| "Which barristers appeared together most?" | ❌ Cross-document aggregation impossible | ✅ Path query + `count()` |
-| "What did the judge say about jurisdiction?" | ✅ Semantic similarity works | ✅ Also works + structured context |
+| Query pattern                                      | Pure vector                              | Graph RAG                             |
+| -------------------------------------------------- | ---------------------------------------- | ------------------------------------- |
+| "Has Quinn Emanuel acted on both sides?"           | ❌ Requires reading every mention        | ✅ Single`MATCH` traversal          |
+| "Which firms instructed on sovereign-state cases?" | ❌ Relation not in text structure        | ✅`HAS_DEFENDANT_FIRM` relationship |
+| "Which barristers appeared together most?"         | ❌ Cross-document aggregation impossible | ✅ Path query +`count()`            |
+| "What did the judge say about jurisdiction?"       | ✅ Semantic similarity works             | ✅ Also works + structured context    |
 
 ### 3.4 Neo4j Configuration
 
 - **Database:** Neo4j local (bolt://127.0.0.1:7687) or Aura Free
 - **Version:** 5.18+ required for vector index prefilter syntax
 - **Indexes created automatically:**
-  - `chunk_text_embedding` — VECTOR index on `Chunk.text_embedding` (1536d, cosine)
+  - `chunk_text_embedding` — VECTOR index on `Chunk.text_embedding` (1536d, ==cosine==)
   - `chunk_text_fulltext` — FULLTEXT index on `Chunk.text`
 - **Constraints implied by MERGE:** All entity nodes MERGE on key property (`name`, `neutralCitation`)
 
@@ -167,7 +170,7 @@ User Question
             ▼      ▼         ▼      │      ▼        ▼
           Judge  Party     Party  Legal  Topic   Legislation
                                Topic   (30)    (135 · URL)
-                                          
+                                      
    HAS_CLAIMANT_COUNSEL ─────► Counsel ◄─── HAS_DEFENDANT_COUNSEL
    HAS_CLAIMANT_FIRM ──────►  LawFirm ◄──── HAS_DEFENDANT_FIRM
                                 │                  │
@@ -179,17 +182,17 @@ User Question
 
 ### Entity counts (corpus: 20 EWHC Commercial Court 2026 judgments)
 
-| Entity | Count | Notes |
-|---|---|---|
-| Document | 20 | Primary judgments |
-| Chunk | 891 | ~500 tokens each, all embedded |
-| Judgment | 28 | 20 primary [2026] EWHC N (Comm) + 8 cited |
-| Counsel | 86 | 30 enriched with chambers; 56 from cited cases |
-| LawFirm | 39 | 38 enriched with firm_type + tier |
-| Party | 261 | Includes cited-case parties |
-| LegalTopic | **30** | Controlled vocabulary (Literal constraint) |
-| Legislation | 135 | Enriched with legislation.gov.uk URLs |
-| Judge | 58 | |
+| Entity      | Count        | Notes                                          |
+| ----------- | ------------ | ---------------------------------------------- |
+| Document    | 20           | Primary judgments                              |
+| Chunk       | 891          | ~500 tokens each, all embedded                 |
+| Judgment    | 28           | 20 primary [2026] EWHC N (Comm) + 8 cited      |
+| Counsel     | 86           | 30 enriched with chambers; 56 from cited cases |
+| LawFirm     | 39           | 38 enriched with firm_type + tier              |
+| Party       | 261          | Includes cited-case parties                    |
+| LegalTopic  | **30** | Controlled vocabulary (Literal constraint)     |
+| Legislation | 135          | Enriched with legislation.gov.uk URLs          |
+| Judge       | 58           |                                                |
 
 ---
 
@@ -202,6 +205,7 @@ User Question
 ### Q1. Which law firms have acted for sovereign states resisting enforcement of arbitral awards, and have any of them also appeared on the claimant side?
 
 **Cypher:**
+
 ```cypher
 MATCH (j:Judgment)-[:HAS_DEFENDANT]->(p:Party)
 WHERE toLower(p.name) CONTAINS 'republic' OR toLower(p.name) CONTAINS 'federation'
@@ -222,6 +226,7 @@ ORDER BY defended DESC
 ### Q2. Who appeared for the Russian Federation across its cases before the Commercial Court, and what was the outcome in each matter?
 
 **Cypher:**
+
 ```cypher
 MATCH (j:Judgment)-[:HAS_DEFENDANT]->(p:Party)
 WHERE toLower(p.name) CONTAINS 'russian' OR toLower(p.name) CONTAINS 'russia'
@@ -241,6 +246,7 @@ RETURN j.neutralCitation, j.caseName, j.outcome,
 ### Q3. If I'm instructing counsel for a state client challenging an award on jurisdictional grounds, which barristers have the most experience on that side of these disputes?
 
 **Cypher:**
+
 ```cypher
 MATCH (j:Judgment)-[:HAS_DEFENDANT]->(p:Party)
 WHERE toLower(p.name) CONTAINS 'republic' OR toLower(p.name) CONTAINS 'federation'
@@ -255,6 +261,7 @@ ORDER BY caseCount DESC
 ```
 
 **Expected answer:**
+
 1. **Vernon Flynn KC** (Brick Court, KC since 2006) — 5 appearances in Hulley/Russia proceedings
 2. **Constantine Partasides KC** (Three Crowns, KC since 2013) — Republic of Korea, ECT
 3. **Samuel Wordsworth KC** (Essex Court, KC since 2009) — ECT investment treaty
@@ -265,6 +272,7 @@ ORDER BY caseCount DESC
 ### Q4. Has Quinn Emanuel ever acted against a sovereign state respondent, or do they consistently act for one side in these enforcement proceedings?
 
 **Cypher:**
+
 ```cypher
 MATCH (j:Judgment)-[r:HAS_CLAIMANT_FIRM|HAS_DEFENDANT_FIRM]->(f:LawFirm)
 WHERE toLower(f.name) CONTAINS 'quinn'
@@ -277,6 +285,7 @@ RETURN j.neutralCitation, j.caseName, j.outcome,
 ```
 
 **Expected answer:** Quinn Emanuel appeared on **both sides**:
+
 - [2026] EWHC 1003 — **claimant side** (GE against Kurdistan Regional Government)
 - [2026] EWHC 418 — **defendant side** (Republic of Djibouti against Soprim)
 
@@ -287,6 +296,7 @@ They do not consistently act for one side.
 ### Q5. Which barristers appeared in cases involving the Energy Charter Treaty, and which firms instructed them?
 
 **Cypher:**
+
 ```cypher
 MATCH (j:Judgment)-[:CITES]->(l:Legislation)
 WHERE toLower(l.name) CONTAINS 'energy charter'
@@ -304,11 +314,13 @@ RETURN j.neutralCitation, j.caseName, j.outcome,
 **Expected answer:**
 
 **[2026] EWHC 368 (Comm) — Republic of Korea v Elliott Associates, LP**
+
 - Korea (claimant/s.67 challenger): **Samuel Wordsworth KC**, Peter Webster, Richard Hoyle → Arnold & Porter Kaye Scholer (UK) LLP
 - Elliott (defendant): **Constantine Partasides KC**, Georgios Petrochilos, Andrew Stafford → Three Crowns LLP + Kobre & Kim (UK) LLP
 - Outcome: Korea's s.67 challenge succeeded in part — Award set aside in part, causation remitted
 
 **[2026] EWHC 456 (Comm) — Hulley v Russian Federation**
+
 - Claimants: Jonathan Crow CVO KC → Stephenson Harwood LLP
 - Russia: Vernon Flynn KC → Pinna Goldberg Ltd
 - Outcome: Enforcement allowed (public policy defence failed)
@@ -424,13 +436,13 @@ claude
 
 ### Expected timings (20 documents, M2 Mac or similar)
 
-| Step | Tool | Time |
-|---|---|---|
-| PDF parsing + chunking | `create_lexical_graph` (pymupdf) | ~83s |
-| Embedding 891 chunks | `embed_chunks` (parallel=50) | ~20s |
-| Entity extraction | `extract_entities` (parallel=50) | ~100s |
-| CSV enrichment | `ingest_csv_into_neo4j` × 3 | ~5s |
-| **Total** | | **~4 min** |
+| Step                   | Tool                               | Time             |
+| ---------------------- | ---------------------------------- | ---------------- |
+| PDF parsing + chunking | `create_lexical_graph` (pymupdf) | ~83s             |
+| Embedding 891 chunks   | `embed_chunks` (parallel=50)     | ~20s             |
+| Entity extraction      | `extract_entities` (parallel=50) | ~100s            |
+| CSV enrichment         | `ingest_csv_into_neo4j` × 3     | ~5s              |
+| **Total**        |                                    | **~4 min** |
 
 ### MCP server startup (after venv warmup)
 
@@ -442,27 +454,27 @@ See [`.mcp.json`](../.mcp.json) for the `env` block configuration.
 
 ## 8. Known Iteration Points
 
-| Priority | Item | Action |
-|---|---|---|
-| 🔴 High | XML legislation linkage (Pedro's `legal-legislation-explorer`) | Adds `Section` nodes → enables section-level citation queries |
-| 🔴 High | Expand corpus to 100–500 judgments | Statistical patterns become reliable; team patterns emerge |
-| 🟡 Medium | Remove `costs` from LegalTopic Literal (too general) | Add `s.67 challenge` as explicit canonical term |
-| 🟡 Medium | `Party.partyType` normalisation | Reduce 261 Party nodes toward 98 target; filter cited-case noise |
-| 🟢 Low | `Judge.seniority` from judicial register CSV | Enables judge-pattern queries (promotion timeline, division) |
-| 🟢 Low | Resolve `Mr Wright` ambiguity (Alexander vs Paul) | 1 node — minor |
+| Priority  | Item                                                            | Action                                                           |
+| --------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 🔴 High   | XML legislation linkage (Pedro's`legal-legislation-explorer`) | Adds`Section` nodes → enables section-level citation queries  |
+| 🔴 High   | Expand corpus to 100–500 judgments                             | Statistical patterns become reliable; team patterns emerge       |
+| 🟡 Medium | Remove`costs` from LegalTopic Literal (too general)           | Add`s.67 challenge` as explicit canonical term                 |
+| 🟡 Medium | `Party.partyType` normalisation                               | Reduce 261 Party nodes toward 98 target; filter cited-case noise |
+| 🟢 Low    | `Judge.seniority` from judicial register CSV                  | Enables judge-pattern queries (promotion timeline, division)     |
+| 🟢 Low    | Resolve`Mr Wright` ambiguity (Alexander vs Paul)              | 1 node — minor                                                  |
 
 ---
 
 ## Outputs Reference
 
-| File | Description |
-|---|---|
-| `outputs/data_models/opposing_counsel_data_model.json` | Validated graph data model (7 nodes, 9 relationships) |
-| `outputs/schemas/opposing_counsel_schema.py` | Pydantic extraction schema v3 with validators |
-| `outputs/reports/opposing_counsel_chatbot_report.md` | Full Q&A report with Cypher answers |
-| `outputs/reports/opposing_counsel_complex_questions.md` | 10 complex traversal questions |
-| `outputs/reports/opposing_counsel_anomaly_report.md` | Data quality audit |
-| `outputs/opposing_counsel_architecture.excalidraw` | Architecture diagram (open at excalidraw.com) |
-| `data/csv/barristers.csv` | 30 barristers with chambers, KC year, specialisms |
-| `data/csv/law_firms.csv` | 39 firms with type, tier, founding year |
-| `data/csv/legislation.csv` | 18 statutes/treaties with legislation.gov.uk URLs |
+| File                                                      | Description                                           |
+| --------------------------------------------------------- | ----------------------------------------------------- |
+| `outputs/data_models/opposing_counsel_data_model.json`  | Validated graph data model (7 nodes, 9 relationships) |
+| `outputs/schemas/opposing_counsel_schema.py`            | Pydantic extraction schema v3 with validators         |
+| `outputs/reports/opposing_counsel_chatbot_report.md`    | Full Q&A report with Cypher answers                   |
+| `outputs/reports/opposing_counsel_complex_questions.md` | 10 complex traversal questions                        |
+| `outputs/reports/opposing_counsel_anomaly_report.md`    | Data quality audit                                    |
+| `outputs/opposing_counsel_architecture.excalidraw`      | Architecture diagram (open at excalidraw.com)         |
+| `data/csv/barristers.csv`                               | 30 barristers with chambers, KC year, specialisms     |
+| `data/csv/law_firms.csv`                                | 39 firms with type, tier, founding year               |
+| `data/csv/legislation.csv`                              | 18 statutes/treaties with legislation.gov.uk URLs     |

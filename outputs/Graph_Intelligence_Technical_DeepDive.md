@@ -4,12 +4,10 @@ theme: neo4j
 paginate: true
 math: katex
 ---
-
 <!-- _class: lead -->
 
-![width:160px](../assets/logo-white.png)
-
 # Graph Intelligence Agent
+
 ### Technical Deep Dive
 
 *Joy Das · Field Engineering · Neo4j*
@@ -31,12 +29,13 @@ math: katex
 <!-- _class: lead -->
 
 # Context & Business Value
+
 ### The problem, the approach, the benefits
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Critical knowledge is trapped in your documents
 
 Most enterprise AI systems can search documents. **None of them can reason over the knowledge inside them.**
@@ -45,6 +44,7 @@ Most enterprise AI systems can search documents. **None of them can reason over 
 <div>
 
 ### What your documents contain
+
 - Regulatory decisions and their rationale
 - Drug interactions across 10,000 trial reports
 - Contractual obligations across 50,000 agreements
@@ -54,7 +54,9 @@ Most enterprise AI systems can search documents. **None of them can reason over 
 </div>
 <div>
 
+
 ### What your AI can actually reach
+
 - Text that looks similar to the query
 - Top-k chunks — disconnected from each other
 - No relationships, no cross-document reasoning
@@ -63,12 +65,13 @@ Most enterprise AI systems can search documents. **None of them can reason over 
 </div>
 </div>
 
+
 > **The gap:** your documents contain connected knowledge. Your AI sees isolated text fragments.
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Why vector RAG hits an accuracy ceiling
 
 ```mermaid
@@ -89,9 +92,11 @@ graph LR
 ```
 
 **The limited levers problem** — you can improve:
+
 - Chunking strategy, embedding model, re-ranking, prompt engineering
 
 **But you cannot fix:**
+
 - *"Which law firms have acted for sovereign states AND also appeared for claimants?"*
 - *"Which barristers consistently appear together on the defence side across 20 cases?"*
 - *"Has this firm switched sides in enforcement proceedings?"*
@@ -100,8 +105,8 @@ These require **traversal across connected entities** — not similarity search.
 
 ---
 
-
 <!-- _class: dense -->
+
 ## What graph intelligence changes
 
 ```mermaid
@@ -140,19 +145,21 @@ graph TB
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Benefits — what becomes possible
 
 <div style="display:flex; gap:2rem;">
 <div>
 
 ### Accuracy
+
 - Answers complex multi-hop questions that vector RAG cannot
 - Graph pre-filters candidate set → fewer hallucinations
 - Schema-constrained extraction → typed, validated entities
 
 ### Traceability
+
 - Every answer cites its source chunk, section, and document
 - Auditable by design — required for regulated industries
 - `EXTRACTED_FROM` chain queryable in Cypher
@@ -160,12 +167,15 @@ graph TB
 </div>
 <div>
 
+
 ### Cross-document reasoning
+
 - Traverse relationships across thousands of documents in milliseconds
 - Connect unstructured knowledge to structured databases
 - Answer questions that required a human analyst before
 
 ### Speed at scale
+
 - *"10 hours of legal research → 30 seconds"* — law firm, 185M+ documents
 - *"80% reduction in research time"* — industrial engineering, 20-year archive
 - *"Weeks → seconds"* — pharma drug safety, 25 siloed R&D systems
@@ -173,25 +183,30 @@ graph TB
 </div>
 </div>
 
+
 ---
 
 <!-- _class: dense -->
+
 ## Who is building this — use cases by vertical
 
 <div style="display:flex; gap:2rem;">
 <div>
 
 ### Financial Services
+
 - Analyst research KG · credit risk Q&A
 - AML entity resolution · financial crime intelligence
 - Regulatory compliance · SOP intelligence
 
 ### Healthcare / Life Sciences
+
 - Drug-target discovery · scientific literature mining
 - Regulatory submission intelligence (ICH M4Q, HL7 FHIR)
 - Clinical trial cross-document analysis
 
 ### Manufacturing & Engineering
+
 - Engineering doc Q&A · maintenance intelligence
 - Supply chain documentation · parts traceability
 - Quality reports · root cause analysis across archives
@@ -199,33 +214,39 @@ graph TB
 </div>
 <div>
 
+
 ### Technology & SaaS
+
 - Product knowledge graph · customer support Q&A
 - SRE runbook graph · incident & ops intelligence
 
 ### **Professional Services & Legal** ← *today's demo*
+
 - **Litigation intelligence** — who appeared, which side, what outcome
 - **Opposing counsel profiling** — barrister track records across judgments
 - Legal doc cross-reference · M&A contract intelligence
 - Tax law KG · legislation traceability
 
 ### Consumer Products, Energy & Government
+
 - Claims intelligence · fraud detection
 - Legislative archives · case intelligence
 
 </div>
 </div>
 
+
 ---
 
-
 <!-- _class: dense -->
+
 ## Is this the right approach for you?
 
 <div style="display:flex; gap:2rem;">
 <div>
 
 ### Strong fit
+
 - Large document corpus that users struggle to query today
 - Answers require connecting information **across multiple documents**
 - Existing search or RAG returns incomplete or inconsistent results
@@ -236,7 +257,9 @@ graph TB
 </div>
 <div>
 
+
 ### Questions to answer before starting
+
 - What are the 10–20 specific questions this system must answer?
 - Who are the end users, and how will they interact with it?
 - Are domain experts available to define the schema and validate answers?
@@ -247,6 +270,7 @@ graph TB
 </div>
 </div>
 
+
 > **Experience shows:** a focused use case with defined questions, available domain experts, and an iterative approach consistently delivers. A broad scope with no defined target rarely does.
 
 ---
@@ -254,17 +278,19 @@ graph TB
 <!-- _class: lead -->
 
 # The Methodology
+
 ### How we do it, end to end
 
 ---
 
 <!-- _class: dense -->
+
 ## The methodology — start small, validate, grow
 
 ```mermaid
 flowchart LR
     S0["1 · Scope<br/>use case · data<br/>constraints · KPIs"] --> S1["2 · Questions<br/>10–20 golden Qs<br/>+ expected answers"]
-    S1 --> S2["3 · Schema<br/>&lt;10 entity types<br/>for this use case"]
+    S1 --> S2["3 · Schema<br/><10 entity types<br/>for this use case"]
     S2 --> S3["4 · Load<br/>sample docs<br/>structured + lexical"]
     S3 --> S4["5 · Extract<br/>entities +<br/>relationships"]
     S4 --> S5["6 · Validate<br/>answer Qs<br/>check quality"]
@@ -295,52 +321,51 @@ flowchart LR
 
 ## Knowledge graph construction
 
-![width:820px](../assets/KGcreation.png)
-
 ---
 
 <!-- _class: lead -->
 
 # Your Data
+
 ### What we work with — and how we connect it
 
 ---
 
-
 <!-- _class: dense -->
-## Neo4j — the superset for RAG
 
-![width:780px](../assets/DataSources.png)
+## Neo4j — the superset for RAG
 
 **One graph, all your data.** Structured records and extracted document knowledge connect through shared entities — a single Cypher query can traverse from a PDF sentence to a database row.
 
 ---
 
-
 <!-- _class: dense -->
+
 ## All formats are possible — PDF requires the most work
 
-| Format | Quality | Note |
-|---|---|---|
-| SQL · CSV · Excel · JSON | **Best** | Import directly as nodes — no parsing needed |
-| XML *(patents, legal, regulatory)* | **Excellent** | Rich structure preserved; clause hierarchy queryable |
-| Markdown · HTML · EPUB | **Excellent** | Native structure; fast to parse and chunk |
-| Email · JSONL · API exports | **Good** | Import as nodes; extract entities from text properties |
-| Word · DOCX · RTF | **Good** | Layout and metadata mostly intact |
-| PowerPoint · PPTX | **Moderate** | Slide-as-page; use page image mode |
-| PDF *(digital)* | **Hard** | Layout lost, tables mangled — **no single parser works for all PDF types** |
-| Scanned PDF | **Hardest** | OCR errors compound every downstream step |
+
+| Format                            | Quality       | Note                                                                       |
+| ----------------------------------- | --------------- | ---------------------------------------------------------------------------- |
+| SQL · CSV · Excel · JSON       | **Best**      | Import directly as nodes — no parsing needed                              |
+| XML*(patents, legal, regulatory)* | **Excellent** | Rich structure preserved; clause hierarchy queryable                       |
+| Markdown · HTML · EPUB          | **Excellent** | Native structure; fast to parse and chunk                                  |
+| Email · JSONL · API exports     | **Good**      | Import as nodes; extract entities from text properties                     |
+| Word · DOCX · RTF               | **Good**      | Layout and metadata mostly intact                                          |
+| PowerPoint · PPTX                | **Moderate**  | Slide-as-page; use page image mode                                         |
+| PDF*(digital)*                    | **Hard**      | Layout lost, tables mangled —**no single parser works for all PDF types** |
+| Scanned PDF                       | **Hardest**   | OCR errors compound every downstream step                                  |
 
 > **Always ask for the original format.** Patents, legal contracts, regulatory submissions, and internal docs are frequently available in XML, JSON, or Markdown — far easier to parse than their PDF renditions.
 
 **Semi-structured data (JSON, XML, email) — two paths:**
+
 - *Import as nodes* — text fields become node properties → extract entities directly from those properties
 - *Build a lexical graph* — when the document structure itself needs to be traversed → next slide
 
 ---
 
-
 <!-- _class: dense -->
+
 ## The lexical graph — structure, context and provenance
 
 When the document structure itself carries meaning — section hierarchy, reading order, table position — we build a **lexical graph** that mirrors it faithfully in Neo4j.
@@ -374,6 +399,7 @@ graph TD
 </div>
 <div style="flex:1;">
 
+
 ### Benefits over flat chunking
 
 - **Structural chunking** — chunk boundaries respect section and paragraph boundaries, not arbitrary token limits
@@ -384,8 +410,8 @@ graph TD
 </div>
 </div>
 
----
 
+---
 
 ## Lexical graph — core vs. expanded model
 
@@ -401,6 +427,7 @@ graph TD
 </div>
 <div style="flex:1; text-align:center;">
 
+
 ### Expanded model · docling · structure-aware
 
 ![width:260px](../assets/expandedlexicalmodel.png)
@@ -410,12 +437,13 @@ graph TD
 </div>
 </div>
 
+
 > **Both models support multimodality** — a Chunk (or Element) node can be a text chunk, an image chunk, or a table chunk.
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Multimodal extraction — tables, images, diagrams and beyond
 
 ```mermaid
@@ -433,6 +461,7 @@ flowchart LR
 ```
 
 **Retrieval options:**
+
 - **VLM description + text embedding** — semantic similarity search over visual content *(default)*
 - **Table as HTML or Markdown** — structure preserved for direct LLM reasoning *(simple tables)*
 - **Multimodal embeddings** — image + text embedded together for richer visual retrieval
@@ -444,9 +473,8 @@ flowchart LR
 
 ---
 
-
-
 <!-- _class: dense -->
+
 ## From data to a unified knowledge graph
 
 ```mermaid
@@ -483,12 +511,13 @@ flowchart LR
 <!-- _class: lead -->
 
 # Entity & Relationship Extraction
+
 ### Turning documents into connected knowledge
 
 ---
 
-
 <!-- _class: dense -->
+
 ## From documents to knowledge — the extraction concept
 
 ```mermaid
@@ -523,6 +552,7 @@ graph LR
 ```
 
 **What happens during extraction:**
+
 - Each chunk is processed by the LLM with a Pydantic schema as the instruction set
 - The LLM identifies and types entities and relationships from the text
 - Extracted nodes and relationships are written to Neo4j — each linked back to its source `Chunk` via `EXTRACTED_FROM`
@@ -530,8 +560,8 @@ graph LR
 
 ---
 
-
 <!-- _class: dense -->
+
 ## The entity graph — entities + relationships + provenance
 
 ```mermaid
@@ -585,8 +615,8 @@ Before graph intelligence, these questions required a human analyst:
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Three layers — one knowledge graph
 
 ```mermaid
@@ -628,6 +658,7 @@ graph LR
 <!-- _class: lead -->
 
 # Technical Deep Dive
+
 ### Live walkthrough with the Neo4j MCP Workspace
 
 ---
@@ -663,6 +694,7 @@ Design and validate your graph schema from sample data
 <div style="flex:1; text-align:center;">
 <div style="background:#0A6190; border-radius:10px; padding:1rem 0; font-size:2rem;">🗄️</div>
 
+
 **Ingest**
 
 Load structured CSV data into Neo4j using parameterized Cypher
@@ -670,6 +702,7 @@ Load structured CSV data into Neo4j using parameterized Cypher
 </div>
 <div style="flex:1; text-align:center;">
 <div style="background:#145439; border-radius:10px; padding:1rem 0; font-size:2rem;">📄</div>
+
 
 **Lexical**
 
@@ -679,6 +712,7 @@ Parse documents into a searchable, embeddable graph of chunks
 <div style="flex:1; text-align:center;">
 <div style="background:#C07A00; border-radius:10px; padding:1rem 0; font-size:2rem;">🔍</div>
 
+
 **Entity**
 
 Extract structured entities and relationships from chunks using LLM/VLM
@@ -687,12 +721,14 @@ Extract structured entities and relationships from chunks using LLM/VLM
 <div style="flex:1; text-align:center;">
 <div style="background:#D43300; border-radius:10px; padding:1rem 0; font-size:2rem;">🤖</div>
 
+
 **GraphRAG**
 
 Query your graph with vector, fulltext, and Cypher search patterns
 
 </div>
 </div>
+
 
 ---
 
@@ -712,8 +748,8 @@ Query your graph with vector, fulltext, and Cypher search patterns
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Start with your evaluation set
 
 > **RAG is always targeted.** The schema, the extraction, the retrieval — all of it is optimized to answer specific questions. Without them, you have no target.
@@ -725,6 +761,7 @@ Query your graph with vector, fulltext, and Cypher search patterns
 3. **Source** — which document, section, or data record contains the answer?
 
 This is your **golden dataset** — the measure of everything:
+
 - Drives schema design (what entities do you need to extract?)
 - Drives extraction validation (are those entities being found?)
 - Drives retrieval tuning (is the right context being retrieved?)
@@ -763,14 +800,15 @@ Adding entity types incrementally is cheaper than reworking a bloated schema.
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Document parsing — choose the right tool
 
 <div style="display:flex; gap:1.5rem; margin-top:0.5rem;">
 <div style="flex:1; border-left:4px solid #0A6190; padding-left:1rem;">
 
 ### PyMuPDF
+
 *Default · fastest*
 
 - Text-heavy docs, papers, reports, **legal judgments**
@@ -781,7 +819,9 @@ Adding entity types incrementally is cheaper than reworking a bloated schema.
 </div>
 <div style="flex:1; border-left:4px solid #145439; padding-left:1rem;">
 
+
 ### Docling
+
 *Structure-aware*
 
 - Complex layouts: multi-column, text boxes
@@ -792,7 +832,9 @@ Adding entity types incrementally is cheaper than reworking a bloated schema.
 </div>
 <div style="flex:1; border-left:4px solid #C07A00; padding-left:1rem;">
 
+
 ### Page Image
+
 *Visual content*
 
 - Slides, diagrams, complex visual layouts
@@ -803,12 +845,13 @@ Adding entity types incrementally is cheaper than reworking a bloated schema.
 </div>
 </div>
 
+
 **Decision rule:** does meaning live in the **text**, the **table structure**, or the **visual layout**?
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Lexical graph — the ingestion sequence
 
 ```mermaid
@@ -826,6 +869,7 @@ flowchart LR
 ```
 
 **Key details:**
+
 - `generate_chunk_descriptions` — VLM describes tables and images → `textDescription` field
 - `embed_chunks` — auto-detects `textDescription`, uses `COALESCE(textDescription, text)` → one unified index for text, tables, and images
 - `assign_section_hierarchy` (optional) — LLM infers heading levels for complex docs (legal, regulatory)
@@ -862,8 +906,8 @@ class CounselEntity(BaseModel):
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Entity extraction — the iterative loop
 
 ```mermaid
@@ -889,6 +933,7 @@ flowchart LR
 ```
 
 **What each gap tells you:**
+
 - Missing entities → improve field description or add example
 - Duplicate nodes → add `@field_validator` normalization
 - Low relationship coverage → clarify relationship description or split into passes
@@ -896,8 +941,8 @@ flowchart LR
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Validate early — after every run
 
 ```cypher
@@ -923,39 +968,42 @@ RETURN count(n) AS linked
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Retrieval — GraphRAG MCP server tools
 
-| Tool | What it does | Best for |
-|---|---|---|
-| `get_neo4j_schema_and_indexes` | Discovers graph schema, vector and fulltext indexes | Schema exploration, agent initialization |
-| `vector_search` | Semantic similarity search using embeddings | Open-ended, conceptual questions |
-| `fulltext_search` | Keyword search with Lucene syntax (AND, OR, fuzzy) | Exact names, codes, identifiers |
-| `read_neo4j_cypher` | Executes read-only Cypher queries | Counts, filters, aggregations, traversals |
-| `search_cypher_query` | Combines vector/fulltext search with graph traversal | Multi-hop, cross-document questions |
-| `read_node_image` | Retrieves base64 images stored on nodes | Multimodal analysis, visual content retrieval |
+
+| Tool                           | What it does                                         | Best for                                      |
+| -------------------------------- | ------------------------------------------------------ | ----------------------------------------------- |
+| `get_neo4j_schema_and_indexes` | Discovers graph schema, vector and fulltext indexes  | Schema exploration, agent initialization      |
+| `vector_search`                | Semantic similarity search using embeddings          | Open-ended, conceptual questions              |
+| `fulltext_search`              | Keyword search with Lucene syntax (AND, OR, fuzzy)   | Exact names, codes, identifiers               |
+| `read_neo4j_cypher`            | Executes read-only Cypher queries                    | Counts, filters, aggregations, traversals     |
+| `search_cypher_query`          | Combines vector/fulltext search with graph traversal | Multi-hop, cross-document questions           |
+| `read_node_image`              | Retrieves base64 images stored on nodes              | Multimodal analysis, visual content retrieval |
 
 The **ReACT agent** selects tools dynamically — one question may invoke several in sequence, using the result of each to inform the next.
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Workspace reports — evaluate and iterate
 
 **Q&A evaluation report** — generated automatically at the end of every run:
 
-| Per question | What it shows |
-|---|---|
-| **Retrieval path** | Method used (vector / fulltext / Cypher / combined) + actual query |
-| **Answer** | Result retrieved from the graph |
-| **Quality** | Complete · Partial · Not answered |
+
+| Per question         | What it shows                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| **Retrieval path**   | Method used (vector / fulltext / Cypher / combined) + actual query                   |
+| **Answer**           | Result retrieved from the graph                                                      |
+| **Quality**          | Complete · Partial · Not answered                                                  |
 | **Improvement note** | What would make this answer better — more data, schema change, different parse mode |
 
 Also includes: entity counts · gap analysis · recommended next steps for the full pipeline.
 
 **On-demand reports** — ask the coding agent at any time:
+
 - **QC & deduplication report** — surfaces duplicates, near-matches, and low-confidence entities with concrete suggestions to refine the schema
 - Each report feeds directly back into the iteration loop: schema refinement → re-extraction → re-evaluation
 
@@ -964,11 +1012,13 @@ Also includes: entity counts · gap analysis · recommended next steps for the f
 <!-- _class: lead -->
 
 # Case Study: Opposing Counsel
+
 ### 20 EWHC Commercial Court judgments → litigation intelligence in 4 minutes
 
 ---
 
 <!-- _class: dense -->
+
 ## The use case — competitive intelligence for litigation partners
 
 **The problem:** preparing for a high-stakes commercial dispute means knowing who will appear on the other side. Today, a junior lawyer traws through PDFs one by one, building a spreadsheet that is out of date before it is finished.
@@ -976,6 +1026,7 @@ Also includes: entity counts · gap analysis · recommended next steps for the f
 **The corpus:** 20 approved judgments from England and Wales High Court, Commercial Court (2026) — international arbitration enforcement, anti-suit injunctions, s.67/68 challenges under the Arbitration Act 1996.
 
 **The questions a litigation partner needs answered:**
+
 1. Which law firms have acted for sovereign states resisting enforcement — and have any switched sides?
 2. Who appeared for the Russian Federation, and what was the outcome?
 3. Which barristers have the most experience defending states in jurisdiction challenges?
@@ -985,6 +1036,7 @@ Also includes: entity counts · gap analysis · recommended next steps for the f
 ---
 
 <!-- _class: dense -->
+
 ## The graph data model — Opposing Counsel
 
 ```mermaid
@@ -1037,31 +1089,36 @@ graph LR
 ---
 
 <!-- _class: dense -->
+
 ## Pipeline timings — 20 documents, 4 minutes total
 
-| Step | Tool | Config | Time |
-|---|---|---|---|
-| PDF parse + chunk | `create_lexical_graph` | pymupdf · no tables/images | 83s |
-| Embed 891 chunks | `embed_chunks` | text-embedding-3-small · parallel=50 | ~20s |
-| Entity extraction | `extract_entities` | gpt-5.4-mini · Pydantic v3 · parallel=50 | ~100s |
-| CSV enrichment | `ingest_csv_into_neo4j` × 3 | barristers · firms · legislation | ~5s |
-| **Total** | | | **~4 min** |
+
+| Step              | Tool                         | Config                                     | Time       |
+| ------------------- | ------------------------------ | -------------------------------------------- | ------------ |
+| PDF parse + chunk | `create_lexical_graph`       | pymupdf · no tables/images                | 83s        |
+| Embed 891 chunks  | `embed_chunks`               | text-embedding-3-small · parallel=50      | ~20s       |
+| Entity extraction | `extract_entities`           | gpt-5.4-mini · Pydantic v3 · parallel=50 | ~100s      |
+| CSV enrichment    | `ingest_csv_into_neo4j` × 3 | barristers · firms · legislation         | ~5s        |
+| **Total**         |                              |                                            | **~4 min** |
 
 **Graph result (after pass 3 + deduplication):**
 
-| Entity | Count | Notes |
-|---|---|---|
-| Document · Chunk | 20 · **891** | all embedded, vector index online |
-| Judgment · Counsel · LawFirm | 28 · **86** · **39** | deduped, KC suffix stripped, firm aliases resolved |
-| LegalTopic | **30** | Literal constraint: 1,278 → 30 |
-| Party · Legislation · Judge | 261 · 135 · 58 | |
+
+| Entity                         | Count                 | Notes                                              |
+| -------------------------------- | ----------------------- | ---------------------------------------------------- |
+| Document · Chunk              | 20 ·**891**          | all embedded, vector index online                  |
+| Judgment · Counsel · LawFirm | 28 ·**86** · **39** | deduped, KC suffix stripped, firm aliases resolved |
+| LegalTopic                     | **30**                | Literal constraint: 1,278 → 30                    |
+| Party · Legislation · Judge  | 261 · 135 · 58      |                                                    |
 
 ---
 
 <!-- _class: dense -->
+
 ## Schema v3 — the three key validators
 
 **1. LegalTopic: `Literal` constraint (1,278 → 30)**
+
 ```python
 LEGAL_TOPIC_CANONICAL = Literal[
     "arbitral award enforcement", "jurisdiction challenge", "anti-suit injunction",
@@ -1071,6 +1128,7 @@ LEGAL_TOPIC_CANONICAL = Literal[
 ```
 
 **2. Counsel: KC suffix stripper**
+
 ```python
 for suffix in (" KC", " QC", " (KC)"):
     if v.upper().endswith(suffix.upper()):
@@ -1078,6 +1136,7 @@ for suffix in (" KC", " QC", " (KC)"):
 ```
 
 **3. LawFirm: alias map**
+
 ```python
 _ALIASES = {
     "Gibson Dunn": "Gibson Dunn & Crutcher LLP",
@@ -1090,9 +1149,11 @@ return _ALIASES.get(v, v)
 ---
 
 <!-- _class: dense -->
+
 ## The 5 questions — answered by graph traversal
 
 **Q1: Law firms on both sides of sovereign enforcement?**
+
 ```cypher
 MATCH (j:Judgment)-[:HAS_DEFENDANT]->(p:Party)
 WHERE toLower(p.name) CONTAINS 'republic' OR toLower(p.name) CONTAINS 'federation'
@@ -1101,9 +1162,11 @@ WITH f.name AS firm, collect(DISTINCT j.neutralCitation) AS defendantCases
 OPTIONAL MATCH (j2:Judgment)-[:HAS_CLAIMANT_FIRM]->(f2:LawFirm {name: firm})
 RETURN firm, size(defendantCases) AS defended, collect(DISTINCT j2.neutralCitation) AS alsoClaimant
 ```
+
 → **Quinn Emanuel** and **Gibson Dunn** both appeared on claimant side in other proceedings.
 
 **Q3: Top defence-side KCs for jurisdiction challenges?**
+
 ```cypher
 MATCH (j:Judgment)-[:HAS_DEFENDANT]->(p:Party)
 WHERE toLower(p.name) CONTAINS 'republic' OR toLower(p.name) CONTAINS 'federation'
@@ -1111,33 +1174,38 @@ MATCH (j)-[:HAS_DEFENDANT_COUNSEL]->(c:Counsel {isKc: true})
 RETURN c.name, c.chambers, c.kcYear, count(DISTINCT j) AS caseCount
 ORDER BY caseCount DESC
 ```
+
 → **Vernon Flynn KC** (Brick Court, KC 2006) — 5 appearances in Hulley/Russia proceedings
 
 ---
 
 <!-- _class: dense -->
+
 ## Graph beats pure RAG — head to head
 
-| Question | Pure vector RAG | Graph RAG |
-|---|---|---|
-| "Has Quinn Emanuel acted on both sides?" | ❌ Reads every mention separately | ✅ `MATCH (j)-[:HAS_CLAIMANT_FIRM\|HAS_DEFENDANT_FIRM]->(f)` |
-| "Who appeared with Vernon Flynn KC?" | ❌ Needs cross-chunk reasoning | ✅ `MATCH (j)-[:HAS_DEFENDANT_COUNSEL]->(c1) MATCH (j)-[:HAS_DEFENDANT_COUNSEL]->(c2)` |
-| "Which Tier 1 boutiques appeared in ECT cases?" | ❌ Firm tier not in text | ✅ Traversal + CSV-enriched `f.arbitrationTier` |
-| "Which statutes appear only in s.67 cases?" | ❌ Set difference impossible | ✅ `WHERE NOT EXISTS { MATCH (j2)-[:CONCERNS]->(:LegalTopic {name:'section 68'}) }` |
-| "What did the judge say about public policy?" | ✅ Works | ✅ Also works + structured context (parties, outcome) |
+
+| Question                                        | Pure vector RAG                   | Graph RAG                                                                             |
+| ------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------- |
+| "Has Quinn Emanuel acted on both sides?"        | ❌ Reads every mention separately | ✅`MATCH (j)-[:HAS_CLAIMANT_FIRM|HAS_DEFENDANT_FIRM]->(f)`                            |
+| "Who appeared with Vernon Flynn KC?"            | ❌ Needs cross-chunk reasoning    | ✅`MATCH (j)-[:HAS_DEFENDANT_COUNSEL]->(c1) MATCH (j)-[:HAS_DEFENDANT_COUNSEL]->(c2)` |
+| "Which Tier 1 boutiques appeared in ECT cases?" | ❌ Firm tier not in text          | ✅ Traversal + CSV-enriched`f.arbitrationTier`                                        |
+| "Which statutes appear only in s.67 cases?"     | ❌ Set difference impossible      | ✅`WHERE NOT EXISTS { MATCH (j2)-[:CONCERNS]->(:LegalTopic {name:'section 68'}) }`    |
+| "What did the judge say about public policy?"   | ✅ Works                          | ✅ Also works + structured context (parties, outcome)                                 |
 
 ---
 
 <!-- _class: dense -->
+
 ## Structured data enrichment — CSV bridge nodes
 
 Three CSVs enrich the extracted graph with data that cannot be reliably extracted from PDF text:
 
-| CSV | Enriches | New properties | Enables |
-|---|---|---|---|
-| `barristers.csv` (30 rows) | `Counsel` nodes | `chambers`, `kcYear`, `callYear`, `specialisms` | "Was this barrister KC at the time of hearing?" |
-| `law_firms.csv` (39 rows) | `LawFirm` nodes | `firmType`, `arbitrationTier`, `legal500`, `foundedYear` | "Do Tier 1 boutiques win more often?" |
-| `legislation.csv` (18 rows) | `Legislation` nodes | `url`, `jurisdiction`, `category` | Link to legislation.gov.uk XML for section-level queries |
+
+| CSV                         | Enriches            | New properties                                           | Enables                                                  |
+| ----------------------------- | --------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| `barristers.csv` (30 rows)  | `Counsel` nodes     | `chambers`, `kcYear`, `callYear`, `specialisms`          | "Was this barrister KC at the time of hearing?"          |
+| `law_firms.csv` (39 rows)   | `LawFirm` nodes     | `firmType`, `arbitrationTier`, `legal500`, `foundedYear` | "Do Tier 1 boutiques win more often?"                    |
+| `legislation.csv` (18 rows) | `Legislation` nodes | `url`, `jurisdiction`, `category`                        | Link to legislation.gov.uk XML for section-level queries |
 
 ```cypher
 UNWIND $records AS record
@@ -1155,15 +1223,18 @@ SET c.chambers = record.chambers,
 ## Your golden dataset — the source of truth
 
 **Build it with your SMEs (one afternoon):**
+
 - 50–100 questions · expected answers · source document + section
 - Covers factual, comparative, and multi-hop question types
 
 **Use it throughout the project:**
+
 - After every schema iteration → measure improvement
 - After extraction scale-up → detect regressions
 - In production → nightly regression, operational health
 
 **Operational signals:**
+
 - Zero-result rate < 5% = healthy retrieval
 - Text-to-Cypher failure rate > 10% = schema too complex for query type
 - Avg tool calls / query trending up = agent struggling to find answers
@@ -1172,20 +1243,22 @@ SET c.chambers = record.chambers,
 
 ---
 
-
 <!-- _class: dense -->
+
 ## Your turn — think about your data
 
 <div style="display:flex; gap:2rem;">
 <div>
 
 ### Your documents
+
 - What types? *(PDF, HTML, XML, Word, database exports)*
 - What volume? *(number of docs, approximate size)*
 - Tables or diagrams that carry key information?
 - Can you reach the upstream source for any PDF?
 
 ### Your questions
+
 - What are your **10–20 priority questions?**
 - Expected answer + source document for each?
 - Who are your SMEs — the people who know what "correct" is?
@@ -1193,18 +1266,22 @@ SET c.chambers = record.chambers,
 </div>
 <div>
 
+
 ### Your first schema
+
 - 3 most important entity types from your questions?
 - Relationships connecting them?
 - Merge key for each entity? *(name, code, ID)*
 
 ### Your constraints
+
 - LLM provider allowed? *(OpenAI, Azure, Bedrock, Vertex, on-premise)*
 - RBAC requirements? *(who can see what data?)*
 - Update pattern? *(full reload vs incremental delta)*
 
 </div>
 </div>
+
 
 ---
 
