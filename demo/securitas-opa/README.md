@@ -252,3 +252,4 @@ Both graphs are **pre-built before the call**. The full 25-minute script — eve
 | [outputs/data_models/opa_auth_policy_data_model.json](../../outputs/data_models/opa_auth_policy_data_model.json) | The custom entity/relationship data model |
 | [outputs/schemas/opa_auth_policy_schema.py](../../outputs/schemas/opa_auth_policy_schema.py) | Compiled Pydantic extraction schema |
 | [outputs/reports/opa_auth_policy_report.md](../../outputs/reports/opa_auth_policy_report.md) | Full graph statistics and validated query results |
+| [outputs/queries/opa_auth_policy_queries.cypher](../../outputs/queries/opa_auth_policy_queries.cypher) | All demo Cypher queries in one runnable file (Aura Explore or `read_neo4j_cypher`) |
