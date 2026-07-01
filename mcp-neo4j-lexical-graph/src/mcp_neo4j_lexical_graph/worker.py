@@ -45,6 +45,125 @@ def count_pdf_pages(pdf_path: str) -> int:
     return count
 
 
+def count_markdown_sections(md_path: str) -> int:
+    """Count logical sections in a Markdown file (treated as 'pages' for progress)."""
+    import re
+    text = Path(md_path).read_text(encoding="utf-8", errors="replace")
+    headers = re.findall(r"^#{1,3} .+", text, re.MULTILINE)
+    return max(1, len(headers))
+
+
+def parse_single_markdown(
+    md_path: str,
+    source_id: str,
+    version: int,
+    parse_mode: str,
+    progress_queue: Optional[multiprocessing.Queue] = None,
+    *,
+    metadata: Optional[dict[str, Any]] = None,
+    chunk_size: int = 500,
+    chunk_overlap: int = 50,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Parse a single Markdown file into the same chunk-dict format as parse_single_pdf."""
+    return _parse_markdown(
+        md_path=md_path,
+        source_id=source_id,
+        version=version,
+        metadata=metadata or {},
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        progress_queue=progress_queue,
+    )
+
+
+def _parse_markdown(
+    md_path: str,
+    source_id: str,
+    version: int,
+    metadata: dict[str, Any],
+    chunk_size: int,
+    chunk_overlap: int,
+    progress_queue: Optional[multiprocessing.Queue],
+) -> dict[str, Any]:
+    """Read a Markdown file, chunk by token-window, return pymupdf-compatible dict."""
+    import json
+    import re
+    import tiktoken
+    from datetime import datetime
+
+    path = Path(md_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Markdown file not found: {md_path}")
+
+    text = path.read_text(encoding="utf-8", errors="replace")
+    doc_id = f"{source_id}_v{version}"
+
+    # Count heading-delimited sections as logical pages for progress display
+    section_headers = re.findall(r"^#{1,3} .+", text, re.MULTILINE)
+    logical_pages = max(1, len(section_headers))
+
+    _send_progress(progress_queue, "parsing_start", source_id, logical_pages)
+
+    encoding = tiktoken.get_encoding("cl100k_base")
+    tokens = encoding.encode(text)
+    total_tokens = len(tokens)
+
+    strategy_params = json.dumps({"chunk_size": chunk_size, "chunk_overlap": chunk_overlap})
+
+    chunks: list[dict[str, Any]] = []
+    token_start = 0
+    while token_start < total_tokens:
+        token_end = min(token_start + chunk_size, total_tokens)
+        chunk_tokens = tokens[token_start:token_end]
+        chunk_text = encoding.decode(chunk_tokens)
+        chunks.append({
+            "id": f"{doc_id}_chunk_{len(chunks):04d}",
+            "text": chunk_text,
+            "index": len(chunks),
+            "tokenCount": len(chunk_tokens),
+            "type": "text",
+            "chunkSetVersion": 1,
+            "active": True,
+            "strategy": "token_window",
+            "strategyParams": strategy_params,
+            "documentName": path.stem,
+        })
+        step = chunk_size - chunk_overlap
+        next_start = token_start + step
+        if next_start >= total_tokens or next_start <= token_start:
+            break
+        token_start = next_start
+
+    _send_progress(progress_queue, "parsing_done", source_id, 0, 0)
+
+    return {
+        "parse_mode": "markdown",
+        "doc_id": doc_id,
+        "source_id": source_id,
+        "version": version,
+        "total_pages": logical_pages,
+        "element_records": [],
+        "chunks": chunks,
+        "fig_counter": 0,
+        "tbl_counter": 0,
+        "doc_props": {
+            "id": doc_id,
+            "sourceId": source_id,
+            "version": version,
+            "active": True,
+            "name": path.stem,
+            "source": str(path.resolve()),
+            "parseMode": "markdown",
+            "parseParams": json.dumps({"chunk_size": chunk_size, "chunk_overlap": chunk_overlap}),
+            "totalPages": logical_pages,
+            "totalElements": 0,
+            "createdAt": datetime.now().isoformat(),
+            **{k.replace(" ", "_").replace("-", "_"): v for k, v in metadata.items()},
+        },
+    }
+
+
 def parse_single_pdf(
     pdf_path: str,
     source_id: str,

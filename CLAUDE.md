@@ -1,5 +1,25 @@
 # Claude Code Agent Context — neo4j-mcp-workspace-template
 
+## Securitas Demo (July 1, 2026)
+
+This workspace is configured for the Securitas Intelligent Services AB — Document Intelligence demo.
+
+**Demo goal:** Show how Securitas's Markdown platform documentation becomes a queryable knowledge graph.  
+**Demo corpus:** OPA (Open Policy Agent) documentation — same format (Markdown), same domain (authorization).  
+**Demo directory:** `demo/securitas-opa/` — contains README, fetch script, ontology, and pre-scripted questions.
+
+**Quick start for the demo:**
+```bash
+python demo/securitas-opa/fetch-opa-docs.py   # download OPA docs
+./setup.sh                                      # configure credentials and MCP servers
+# then: claude → /develop-neo4j-graph
+```
+
+**Markdown parse mode:** This workspace has been extended to support `.md` files natively.
+Use `parse_mode: "markdown"` in `create_lexical_graph` when pointing at a folder of Markdown files.
+
+---
+
 ## 1. Setup Status Check
 
 **On every session start, verify the following before doing any work:**

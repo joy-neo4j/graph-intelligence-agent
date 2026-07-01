@@ -84,6 +84,7 @@ logger = structlog.get_logger()
 # Time-per-page estimates (seconds) for pre-flight warnings
 _TIME_PER_PAGE: dict[str, float] = {
     "pymupdf": 1.5,
+    "markdown": 0.5,   # Markdown: no PDF render, pure Python text processing
     "page_image": 2.5,
     "docling": 15.0,
     "vlm_blocks": 12.0,
@@ -148,13 +149,13 @@ def create_mcp_server(
         ),
     )
     async def create_lexical_graph(
-        path: str = Field(..., description="Path to a PDF file or a folder of PDFs"),
+        path: str = Field(..., description="Path to a PDF file, a folder of PDFs, a Markdown (.md) file, or a folder of Markdown files (use parse_mode='markdown' for .md files)"),
         output_dir: str = Field(..., description="Directory for logs and manifests"),
         document_id: Optional[str] = Field(
             None, description="Custom sourceId (defaults to filename). Ignored for folders."
         ),
         parse_mode: str = Field(
-            "pymupdf", description="Parse mode: 'pymupdf', 'docling', 'page_image', or 'vlm_blocks' (experimental — prefer docling)"
+            "pymupdf", description="Parse mode: 'pymupdf', 'markdown' (for .md files), 'docling', 'page_image', or 'vlm_blocks' (experimental — prefer docling)"
         ),
         store_page_images: bool = Field(
             False, description="Render and store page images on Page nodes"
@@ -223,23 +224,38 @@ def create_mcp_server(
         from .worker import count_pdf_pages
 
         is_folder = p.is_dir()
-        if is_folder:
-            pdf_files = sorted(p.glob("*.pdf")) + sorted(p.glob("*.PDF"))
-            if not pdf_files:
-                raise ToolError(f"No PDF files found in {path}")
+        if parse_mode == "markdown":
+            # Markdown mode: accept .md files
+            if is_folder:
+                pdf_files = sorted(p.glob("*.md")) + sorted(p.glob("*.MD"))
+                if not pdf_files:
+                    raise ToolError(f"No Markdown (.md) files found in {path}")
+            else:
+                if not p.is_file():
+                    raise ToolError(f"Path is neither a file nor a directory: {path}")
+                pdf_files = [p]
         else:
-            if not p.is_file():
-                raise ToolError(f"Path is neither a file nor a directory: {path}")
-            pdf_files = [p]
+            if is_folder:
+                pdf_files = sorted(p.glob("*.pdf")) + sorted(p.glob("*.PDF"))
+                if not pdf_files:
+                    raise ToolError(f"No PDF files found in {path}")
+            else:
+                if not p.is_file():
+                    raise ToolError(f"Path is neither a file nor a directory: {path}")
+                pdf_files = [p]
 
         files_total = len(pdf_files)
         total_pages = 0
         file_page_counts: list[tuple[str, int]] = []
         for pdf in pdf_files:
             try:
-                pc = count_pdf_pages(str(pdf))
+                if parse_mode == "markdown":
+                    from .worker import count_markdown_sections
+                    pc = count_markdown_sections(str(pdf))
+                else:
+                    pc = count_pdf_pages(str(pdf))
             except Exception:
-                pc = 0
+                pc = 1
             file_page_counts.append((str(pdf), pc))
             total_pages += pc
 
@@ -478,11 +494,11 @@ def create_mcp_server(
                 doc = await get_document(neo4j_driver, database, document_id)
                 if not doc:
                     raise ToolError(f"Document not found: {document_id}")
-                if doc.get("parseMode") in ("pymupdf", "text_only"):
+                if doc.get("parseMode") in ("pymupdf", "text_only", "markdown"):
                     return json.dumps({
                         "status": "success",
                         "message": (
-                            f"Document '{document_id}' was created in pymupdf mode. "
+                            f"Document '{document_id}' was created in {doc.get('parseMode')} mode. "
                             "Chunks are created automatically during graph creation. "
                             "Use embed_chunks to add vector embeddings."
                         ),
@@ -1767,7 +1783,7 @@ async def _run_job(
       4. Remap IDs if version changed, write to Neo4j with retry
       5. Update job progress
     """
-    from .worker import parse_single_pdf  # noqa: F401 — ensures pickle works in pool
+    from .worker import parse_single_pdf, parse_single_markdown  # noqa: F401 — ensures pickle works in pool
 
     loop = asyncio.get_running_loop()
     progress_queue: multiprocessing.Queue = multiprocessing.Queue()
@@ -2027,11 +2043,24 @@ def _make_worker_call(
     """Create a callable for run_in_executor.
 
     ProcessPoolExecutor requires a callable (no args), so we wrap
-    parse_single_pdf with functools.partial.
+    the appropriate worker function with functools.partial.
     """
     import functools
-    from .worker import parse_single_pdf
 
+    if parse_mode == "markdown":
+        from .worker import parse_single_markdown
+        return functools.partial(
+            parse_single_markdown,
+            md_path=pdf_path,
+            source_id=source_id,
+            version=version,
+            parse_mode=parse_mode,
+            progress_queue=None,
+            **{k: v for k, v in kwargs.items()
+               if k in ("metadata", "chunk_size", "chunk_overlap")},
+        )
+
+    from .worker import parse_single_pdf
     return functools.partial(
         parse_single_pdf,
         pdf_path=pdf_path,
@@ -2056,7 +2085,7 @@ async def _write_worker_result_to_neo4j(
     """
     parse_mode = worker_result["parse_mode"]
 
-    if parse_mode == "pymupdf":
+    if parse_mode in ("pymupdf", "markdown"):
         return await _write_pymupdf_result(driver, database, worker_result)
     else:
         # docling, page_image, or vlm_blocks -- reconstruct ParsedDocument from dict

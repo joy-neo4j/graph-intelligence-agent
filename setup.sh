@@ -3,6 +3,24 @@ set -euo pipefail
 
 WORKSPACE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# On Windows/Git Bash, uv.exe is a native Windows process and cannot resolve
+# POSIX-style drive paths like /g/My Drive/... — convert to G:/My Drive/...
+# We also move venvs to local disk because Google Drive FUSE makes Python imports
+# 5-10x slower, causing MCP clients to time out waiting for server startup.
+case "$(uname -s 2>/dev/null)" in
+  MINGW*|CYGWIN*|MSYS*)
+    MCP_WORKSPACE_DIR="$(echo "$WORKSPACE_DIR" | sed 's|^/\([a-zA-Z]\)/|\1:/|')"
+    # Convert USERPROFILE to forward-slash Windows path (e.g. C:/Users/JoyDas)
+    LOCAL_VENV_BASE="$(echo "$USERPROFILE" | sed 's|\\|/|g')/.neo4j-mcp-venvs"
+    IS_WINDOWS=true
+    ;;
+  *)
+    MCP_WORKSPACE_DIR="$WORKSPACE_DIR"
+    LOCAL_VENV_BASE=""
+    IS_WINDOWS=false
+    ;;
+esac
+
 # ─────────────────────────────────────────────────────────────
 # Colors
 # ─────────────────────────────────────────────────────────────
@@ -258,6 +276,20 @@ generate_mcp_json() {
     }"
   fi
 
+  # On Windows, redirect venvs to local disk so Python import times stay under
+  # MCP client timeouts (Google Drive FUSE makes imports 5-10x slower).
+  local venv_env_ingest="" venv_env_lexical="" venv_env_entity="" venv_env_graphrag=""
+  if [ "$IS_WINDOWS" = true ] && [ -n "$LOCAL_VENV_BASE" ]; then
+    venv_env_ingest=",
+      \"env\": {\"UV_PROJECT_ENVIRONMENT\": \"${LOCAL_VENV_BASE}/ingest\"}"
+    venv_env_lexical=",
+      \"env\": {\"UV_PROJECT_ENVIRONMENT\": \"${LOCAL_VENV_BASE}/lexical-graph\"}"
+    venv_env_entity=",
+      \"env\": {\"UV_PROJECT_ENVIRONMENT\": \"${LOCAL_VENV_BASE}/entity-graph\"}"
+    venv_env_graphrag=",
+      \"env\": {\"UV_PROJECT_ENVIRONMENT\": \"${LOCAL_VENV_BASE}/graphrag\"}"
+  fi
+
   cat > "$output_file" << MCPEOF
 {
   "mcpServers": {
@@ -267,19 +299,19 @@ generate_mcp_json() {
     },
     "neo4j-ingest": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"]${venv_env_ingest}
     },
     "neo4j-lexical-graph": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"]${venv_env_lexical}
     },
     "neo4j-entity-graph": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"]${venv_env_entity}
     },
     "neo4j-graphrag": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"]${venv_env_graphrag}
     }${bigquery_block}
   }
 }
@@ -310,19 +342,19 @@ generate_gemini_settings_json() {
     },
     "neo4j-ingest": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"]
     },
     "neo4j-lexical-graph": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"]
     },
     "neo4j-entity-graph": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"]
     },
     "neo4j-graphrag": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"]
     }${bigquery_block}
   }
 }
@@ -353,19 +385,19 @@ generate_vscode_mcp_json() {
     },
     "neo4j-ingest": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"]
     },
     "neo4j-lexical-graph": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"]
     },
     "neo4j-entity-graph": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"]
     },
     "neo4j-graphrag": {
       "command": "uv",
-      "args": ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"]
+      "args": ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"]
     }${bigquery_block}
   }
 }
@@ -399,22 +431,22 @@ generate_opencode_json() {
     },
     "neo4j-ingest": {
       "type": "local",
-      "command": ["uv", "--directory", "${WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"],
+      "command": ["uv", "--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"],
       "enabled": true
     },
     "neo4j-lexical-graph": {
       "type": "local",
-      "command": ["uv", "--directory", "${WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"],
+      "command": ["uv", "--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"],
       "enabled": true
     },
     "neo4j-entity-graph": {
       "type": "local",
-      "command": ["uv", "--directory", "${WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"],
+      "command": ["uv", "--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"],
       "enabled": true
     },
     "neo4j-graphrag": {
       "type": "local",
-      "command": ["uv", "--directory", "${WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"],
+      "command": ["uv", "--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"],
       "enabled": true
     }${bigquery_block}
   }
@@ -433,22 +465,22 @@ enabled = true
 
 [mcp_servers.neo4j-ingest]
 command = "uv"
-args = ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"]
+args = ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-ingest", "run", "mcp-neo4j-ingest"]
 enabled = true
 
 [mcp_servers.neo4j-lexical-graph]
 command = "uv"
-args = ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"]
+args = ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-lexical-graph", "run", "mcp-neo4j-lexical-graph"]
 enabled = true
 
 [mcp_servers.neo4j-entity-graph]
 command = "uv"
-args = ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"]
+args = ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-entity-graph", "run", "mcp-neo4j-entity-graph"]
 enabled = true
 
 [mcp_servers.neo4j-graphrag]
 command = "uv"
-args = ["--directory", "${WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"]
+args = ["--directory", "${MCP_WORKSPACE_DIR}/mcp-neo4j-graphrag", "run", "mcp-neo4j-graphrag"]
 enabled = true
 CODEXEOF
 

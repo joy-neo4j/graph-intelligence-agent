@@ -43,6 +43,8 @@ Read source data samples to understand content and structure. Do not use MCP too
 
 **PDF data:** List files in `data/pdf/` using Shell: `find data/pdf -name "*.pdf" | sort`. (Use Shell rather than file-picker/glob tools — `data/pdf/` is gitignored so those tools may not see PDFs.) For each PDF, use the Read tool with `pages: "1-2"` to sample content; if the Read tool is blocked by gitignore, fall back to Shell: `uv run --with pymupdf python3 -c "import fitz; doc=fitz.open('data/pdf/FILENAME.pdf'); print(doc[0].get_text()[:2000])"`. Reference the Parse Mode Guide in [HANDLE_UNSTRUCTURED_DATA.md](./references/HANDLE_UNSTRUCTURED_DATA.md) to identify the appropriate parse mode for each document type.
 
+**Markdown data:** List files in `data/markdown/` using Shell: `find data/markdown -name "*.md" | sort`. Read the first 100 lines of each file to sample content. Use `parse_mode: "markdown"` in `create_lexical_graph` — this mode is supported natively and handles `.md` files as text with token-window chunking. No PDF conversion needed. For the Securitas OPA demo: run `python demo/securitas-opa/fetch-opa-docs.py` first to download the corpus.
+
 Summarize what you found: data types present, content domain, entity types visible, structural observations.
 
 ---
@@ -88,25 +90,26 @@ Save the final model JSON to `outputs/data_models/<topic>_data_model.json`.
 Reference [HANDLE_STRUCTURED_DATA.md](./references/HANDLE_STRUCTURED_DATA.md) for ingestion details.
 Always use absolute paths. Use `ingest_csv_into_neo4j`.
 
-### PDF data — `neo4j-lexical-graph`
+### PDF / Markdown data — `neo4j-lexical-graph`
 
 Load the mode-specific reference file for the exact tool sequence:
 - **pymupdf** → [PYMUPDF_MODE.md](./references/PYMUPDF_MODE.md)
+- **markdown** → same workflow as pymupdf (chunks created automatically)
 - **docling** → [DOCLING_MODE.md](./references/DOCLING_MODE.md)
 - **page_image** → [PAGE_IMAGE_MODE.md](./references/PAGE_IMAGE_MODE.md)
 - **vlm_blocks** → [VLM_BLOCKS_MODE.md](./references/VLM_BLOCKS_MODE.md)
 
 Quick reference (all modes):
 
-| Step | Tool | pymupdf | docling | page_image | vlm_blocks |
-|------|------|---------|---------|------------|------------|
-| 1 | `create_lexical_graph` | ✓ | ✓ | ✓ | ✓ |
-| 2 | `chunk_lexical_graph` | ✗ skip | ✓ | ✓ | ✓ |
-| 3 | `list_documents` | ✓ | ✓ | ✓ | ✓ |
-| 4 | `verify_lexical_graph` | optional | optional | ✗ never | optional |
-| 5 | `assign_section_hierarchy` | ✗ skip | optional | ✗ skip | optional |
-| 6 | `generate_chunk_descriptions` | if images/tables | if images/tables | **required** | if images/tables |
-| 7 | `embed_chunks` | ✓ | ✓ | ✓ | ✓ |
+| Step | Tool | pymupdf | markdown | docling | page_image | vlm_blocks |
+|------|------|---------|----------|---------|------------|------------|
+| 1 | `create_lexical_graph` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 2 | `chunk_lexical_graph` | ✗ skip | ✗ skip | ✓ | ✓ | ✓ |
+| 3 | `list_documents` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 4 | `verify_lexical_graph` | optional | optional | optional | ✗ never | optional |
+| 5 | `assign_section_hierarchy` | ✗ skip | ✗ skip | optional | ✗ skip | optional |
+| 6 | `generate_chunk_descriptions` | if images/tables | ✗ skip | if images/tables | **required** | if images/tables |
+| 7 | `embed_chunks` | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 **`generate_chunk_descriptions` — call without `document_id`** to run for all active documents at once.
 
